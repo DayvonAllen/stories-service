@@ -14,10 +14,8 @@ type UserRepoImpl struct {
 	user domain.User
 }
 
-var dbConnection = database.GetInstance()
-
 func (u UserRepoImpl) Create(user *domain.User) error {
-	cur, err := dbConnection.Collection("users").Find(context.TODO(), bson.M{
+	cur, err := database.GetInstance().UserCollection.Find(context.TODO(), bson.M{
 		"$or": []interface{}{
 			bson.M{"email": user.Email},
 			bson.M{"username": user.Username},
@@ -30,7 +28,7 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 	}
 
 	if !cur.Next(context.TODO()) {
-		_, err = dbConnection.Collection("users").InsertOne(context.TODO(), &user)
+		_, err = database.GetInstance().UserCollection.InsertOne(context.TODO(), &user)
 
 		if err != nil {
 			return fmt.Errorf("error processing data")
@@ -43,7 +41,7 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 }
 
 func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
-	err := dbConnection.Collection("users").FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.user)
+	err := database.GetInstance().UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.user)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -61,7 +59,7 @@ func (u UserRepoImpl) UpdateByID(user *domain.User) error {
 	filter := bson.D{{"_id", user.Id}}
 	update := bson.D{{"$set", user}}
 
-	database.GetInstance().Collection("users").FindOneAndUpdate(context.TODO(),
+	database.GetInstance().UserCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts)
 
 	return nil

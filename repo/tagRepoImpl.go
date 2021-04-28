@@ -83,3 +83,9 @@ func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
 
 	return &t.TagList, nil
 }
+
+func NewTagRepoImpl() TagRepoImpl {
+	var tagRepoImpl TagRepoImpl
+
+	return tagRepoImpl
+}

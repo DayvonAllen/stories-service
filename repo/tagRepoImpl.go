@@ -6,6 +6,7 @@ import (
 	"example.com/app/domain"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TagRepoImpl struct {
@@ -82,6 +83,14 @@ func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
 	}
 
 	return &t.TagList, nil
+}
+
+func (t TagRepoImpl) DeleteByID(id primitive.ObjectID) error {
+	_, err := database.GetInstance().TagsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewTagRepoImpl() TagRepoImpl {

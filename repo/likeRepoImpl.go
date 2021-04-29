@@ -27,7 +27,7 @@ func (l LikeRepoImpl) CreateLikeForStory(username string, storyId primitive.Obje
 		return err
 	}
 
-	query := bson.M{"username": bson.M{"$in": story.Dislikes}}
+	query := bson.M{"authorUsername": bson.M{"$in": story.Dislikes}}
 
 	// Get all users
 	cur, err := database.GetInstance().StoriesCollection.Find(context.TODO(), query)
@@ -71,7 +71,7 @@ func (l LikeRepoImpl) CreateLikeForStory(username string, storyId primitive.Obje
 	// if user disliked the comment remove the dislike from the dislike arr
 	if userDisLiked {
 		opts := options.FindOneAndUpdate().SetUpsert(true)
-		filter := bson.D{{"username", username}}
+		filter := bson.D{{"authorUsername", username}}
 		update := bson.D{{"$set", bson.D{{"dislikes", &disLikeList}}}}
 
 		err = database.GetInstance().DislikesCollection.FindOneAndUpdate(context.TODO(),
@@ -117,7 +117,7 @@ func (l LikeRepoImpl) CreateLikeForComment(username string, commentId primitive.
 		return err
 	}
 
-	query := bson.M{"username": bson.M{"$in": comment.Dislikes}}
+	query := bson.M{"authorUsername": bson.M{"$in": comment.Dislikes}}
 
 	// Get all users
 	cur, err := database.GetInstance().CommentsCollection.Find(context.TODO(), query)
@@ -161,7 +161,7 @@ func (l LikeRepoImpl) CreateLikeForComment(username string, commentId primitive.
 	// if user disliked the comment remove the dislike from the dislike arr
 	if userDisLiked {
 		opts := options.FindOneAndUpdate().SetUpsert(true)
-		filter := bson.D{{"username", username}}
+		filter := bson.D{{"authorUsername", username}}
 		update := bson.D{{"$set", bson.D{{"dislikes", &disLikeList}}}}
 
 		err = database.GetInstance().DislikesCollection.FindOneAndUpdate(context.TODO(),

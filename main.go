@@ -3,19 +3,17 @@ package main
 import (
 	"example.com/app/database"
 	"example.com/app/events"
-	"example.com/app/repo"
 	"example.com/app/router"
-	"example.com/app/util"
 	"log"
 )
 
 func init() {
 	// create database connection instance for first time
 	_ = database.GetInstance()
-	err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
-	if err != nil {
-		return
-	}
+	//err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
+	//if err != nil {
+	//	return
+	//}
 	go events.ConnectToKafkaAsConsumer()
 }
 

@@ -199,7 +199,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 }
 
 func (d DisLikeRepoImpl) DeleteByUsername(username string) error {
-	_, err := database.GetInstance().CommentsCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
+	_, err := database.GetInstance().DislikesCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
 	if err != nil {
 		return err
 	}

@@ -197,7 +197,7 @@ func (l LikeRepoImpl) CreateLikeForComment(username string, commentId primitive.
 }
 
 func (l LikeRepoImpl) DeleteByUsername(username string) error {
-	_, err := database.GetInstance().CommentsCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
+	_, err := database.GetInstance().LikesCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
 	if err != nil {
 		return err
 	}

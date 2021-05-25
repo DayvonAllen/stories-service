@@ -8,5 +8,6 @@ import (
 type Dislike struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
 	AuthorUsername  string `bson:"authorUsername" json:"authorUsername"`
+	ContentId  primitive.ObjectID `bson:"contentId" json:"contentId"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 }

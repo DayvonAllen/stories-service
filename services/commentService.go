@@ -7,7 +7,7 @@ import (
 )
 
 type CommentService interface {
-	Create(id primitive.ObjectID) error
+	Create(comment *domain.Comment) error
 	FindById(id primitive.ObjectID) (*domain.Comment, error)
 	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.Comment, error)
 	UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error)
@@ -18,8 +18,8 @@ type DefaultCommentService struct {
 	repo repo.CommentRepo
 }
 
-func (c DefaultCommentService) Create(id primitive.ObjectID) error {
-	err := c.repo.Create(id)
+func (c DefaultCommentService) Create(comment *domain.Comment) error {
+	err := c.repo.Create(comment)
 	if err != nil {
 		return err
 	}

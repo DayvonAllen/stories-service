@@ -16,9 +16,9 @@ type CommentRepoImpl struct {
 	CommentList []domain.Comment
 }
 
-func (c CommentRepoImpl) Create(comment *domain.Tag, storyId primitive.ObjectID) error {
+func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	story := new(domain.Story)
-	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyId}}).Decode(story)
+	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(story)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -112,7 +112,7 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 	return &c.CommentList, nil
 }
 
-func (c CommentRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*domain.Comment, error) {
+func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error) {
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{{"content", newContent}}}}
@@ -127,7 +127,7 @@ func (c CommentRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*
 	return &c.Comment, nil
 }
 
-func (u UserRepoImpl) DeleteByID(id primitive.ObjectID) error {
+func (c CommentRepoImpl) DeleteById(id primitive.ObjectID) error {
 	_, err := database.GetInstance().CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
 	if err != nil {
 		return err

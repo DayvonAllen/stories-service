@@ -65,5 +65,5 @@ func (d *DisLikeHandler) DeleteDisLikeByUsername(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
+	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }

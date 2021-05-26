@@ -15,12 +15,20 @@ func SetupRoutes(app *fiber.App) {
 	lh := handlers.LikeHandler{LikeService: services.NewLikeService(repo.NewLikeRepoImpl())}
 	dh := handlers.DisLikeHandler{DisLikeService: services.NewDisLikeService(repo.NewDisLikeRepoImpl())}
 	ch := handlers.CommentHandler{CommentService: services.NewCommentService(repo.NewCommentRepoImpl())}
+	th := handlers.TagHandler{TagService: services.NewTagService(repo.NewTagRepoImpl())}
+
 	app.Use(recover.New())
 	api := app.Group("", logger.New())
 
 	//stories := api.Group("/stories")
 	////stories.Get("/")
 	//fmt.Println(stories)
+
+	tags := api.Group("/tags")
+	tags.Get("/", middleware.IsLoggedIn, th.FindAll)
+	tags.Get("/:tagName", middleware.IsLoggedIn, th.FindByTagName)
+	tags.Post("/", middleware.IsLoggedIn, th.Create)
+	tags.Delete("/", th.DeleteById)
 
 	likes := api.Group("/likes")
 	likes.Post("/story", middleware.IsLoggedIn, lh.CreateLikeForStory)
@@ -38,7 +46,6 @@ func SetupRoutes(app *fiber.App) {
 	comments.Get("/story", middleware.IsLoggedIn, ch.FindAllCommentsByStoryId)
 	comments.Put("/", middleware.IsLoggedIn, ch.UpdateById)
 	comments.Delete("/", ch.DeleteById)
-
 }
 
 func Setup() *fiber.App {

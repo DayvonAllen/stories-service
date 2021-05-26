@@ -18,7 +18,7 @@ type DefaultTagService struct {
 	repo repo.TagRepo
 }
 
-func (t DefaultTagService) CreateTag(tag *domain.Tag) error {
+func (t DefaultTagService) Create(tag *domain.Tag) error {
 	err := t.repo.Create(tag)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (t DefaultTagService) CreateTag(tag *domain.Tag) error {
 	return nil
 }
 
-func (t DefaultTagService) CreateManyTags(tags *[]interface{}) error {
+func (t DefaultTagService) CreateMany(tags *[]interface{}) error {
 	err := t.repo.CreateMany(tags)
 	if err != nil {
 		return err
@@ -36,6 +36,14 @@ func (t DefaultTagService) CreateManyTags(tags *[]interface{}) error {
 
 func (t DefaultTagService) FindByTagName(tagName string) (*domain.Tag, error) {
 	tag, err := t.repo.FindByTagName(tagName)
+	if err != nil {
+		return nil, err
+	}
+	return tag, nil
+}
+
+func (t DefaultTagService) FindAll() (*[]domain.Tag, error) {
+	tag, err := t.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}

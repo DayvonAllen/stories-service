@@ -99,7 +99,7 @@ func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
 	return &t.TagList, nil
 }
 
-func (t TagRepoImpl) DeleteByID(id primitive.ObjectID) error {
+func (t TagRepoImpl) DeleteById(id primitive.ObjectID) error {
 	_, err := database.GetInstance().TagsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
 	if err != nil {
 		return err

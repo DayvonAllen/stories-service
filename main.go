@@ -18,7 +18,7 @@ func init() {
 	//if err != nil {
 	//	return
 	//}
-	go events.ConnectToKafkaAsConsumer()
+	go events.KafkaConsumerGroup()
 }
 
 func main() {

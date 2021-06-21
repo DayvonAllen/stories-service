@@ -1,17 +1,14 @@
 package main
 
 import (
-	"example.com/app/database"
-	"example.com/app/events"
-	"example.com/app/router"
-<<<<<<< HEAD
-	"example.com/app/util"
 	"fmt"
-=======
->>>>>>> 2f1daa5ce0e1bee8774c4beec7dd9ec4f14cba38
 	"log"
 	"os"
 	"os/signal"
+
+	"example.com/app/database"
+	"example.com/app/events"
+	"example.com/app/router"
 )
 
 func init() {
@@ -32,7 +29,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 
 	go func() {
-		_ = <- c
+		_ = <-c
 		fmt.Println("Shutting down...")
 		_ = app.Shutdown()
 	}()

@@ -6,7 +6,10 @@ import (
 	"example.com/app/repo"
 	"example.com/app/router"
 	"example.com/app/util"
+	"fmt"
 	"log"
+	"os"
+	"os/signal"
 )
 
 func init() {
@@ -21,5 +24,18 @@ func init() {
 
 func main() {
 	app := router.Setup()
-	log.Fatal(app.Listen(":8081"))
+
+	// graceful shutdown on signal interrupts
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		_ = <- c
+		fmt.Println("Shutting down...")
+		_ = app.Shutdown()
+	}()
+
+	if err := app.Listen(":8081"); err != nil {
+		log.Panic(err)
+	}
 }

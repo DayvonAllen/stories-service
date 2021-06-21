@@ -5,7 +5,7 @@ import (
 )
 
 func GenerateTags() *[]interface{} {
-	tags := []string{"creepy pasta", "paranormal", "true story", "campfire", "other"}
+	tags := []string{"creepypasta", "paranormal", "ghost story", "true scary story", "campfire", "other"}
 	tagsSlice := make([]interface{}, 0, len(tags))
 
 	for _, tag := range tags{

@@ -3,10 +3,12 @@ package main
 import (
 	"example.com/app/database"
 	"example.com/app/events"
-	"example.com/app/repo"
 	"example.com/app/router"
+<<<<<<< HEAD
 	"example.com/app/util"
 	"fmt"
+=======
+>>>>>>> 2f1daa5ce0e1bee8774c4beec7dd9ec4f14cba38
 	"log"
 	"os"
 	"os/signal"
@@ -15,10 +17,10 @@ import (
 func init() {
 	// create database connection instance for first time
 	_ = database.GetInstance()
-	err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
-	if err != nil {
-		return
-	}
+	//err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
+	//if err != nil {
+	//	return
+	//}
 	go events.ConnectToKafkaAsConsumer()
 }
 

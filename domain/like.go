@@ -7,6 +7,7 @@ import (
 
 type Like struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
-	AuthorId  primitive.ObjectID `bson:"authorId" json:"authorId"`
+	AuthorUsername  string `bson:"authorUsername" json:"authorUsername"`
+	ContentId  primitive.ObjectID `bson:"contentId" json:"contentId"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 }

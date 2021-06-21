@@ -6,6 +6,8 @@ import (
 	"example.com/app/domain"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TagRepoImpl struct {
@@ -14,7 +16,16 @@ type TagRepoImpl struct {
 }
 
 func (t TagRepoImpl) Create(tag *domain.Tag) error {
-	_, err := database.GetInstance().TagsCollection.InsertOne(context.TODO(), &tag)
+	err := database.GetInstance().TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tag.TagName}}).Decode(&t.Tag)
+
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("not found")
+		}
+		return err
+	}
+	_, err = database.GetInstance().TagsCollection.InsertOne(context.TODO(), &tag)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -39,7 +50,11 @@ func (t TagRepoImpl) FindByTagName(tagName string) (*domain.Tag, error) {
 	err := database.GetInstance().TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tagName}}).Decode(&t.Tag)
 
 	if err != nil {
-		return nil, fmt.Errorf("error processing data")
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("not found")
+		}
+		return nil, err
 	}
 
 	return &t.Tag, nil
@@ -82,4 +97,18 @@ func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
 	}
 
 	return &t.TagList, nil
+}
+
+func (t TagRepoImpl) DeleteById(id primitive.ObjectID) error {
+	_, err := database.GetInstance().TagsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewTagRepoImpl() TagRepoImpl {
+	var tagRepoImpl TagRepoImpl
+
+	return tagRepoImpl
 }

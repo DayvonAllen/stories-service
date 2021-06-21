@@ -7,8 +7,8 @@ import (
 
 type StoryRepo interface {
 	 Create(id primitive.ObjectID) error
-	 UpdateById(primitive.ObjectID, primitive.ObjectID) (*domain.Story, error)
-	 FindAll(id primitive.ObjectID) (*[]domain.Story, error)
-	 FindById(primitive.ObjectID, primitive.ObjectID) (*domain.Story, error)
-	 DeleteById(primitive.ObjectID, primitive.ObjectID) error
+	 UpdateById(primitive.ObjectID, string) (*domain.Story, error)
+	 FindAll() (*[]domain.Story, error)
+	 FindById(primitive.ObjectID) (*domain.Story, error)
+	 DeleteById(primitive.ObjectID) error
 }

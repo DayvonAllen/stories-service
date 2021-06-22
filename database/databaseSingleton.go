@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"example.com/app/config"
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
@@ -60,6 +61,13 @@ func connectToDB() error {
 		tagsCollection, commentsCollection,
 		likesCollection, dislikesCollection,
 		db}
-
 	return nil
+}
+
+func CloseConnection() {
+	err := dbConnection.Disconnect(context.TODO())
+	fmt.Println("Closing DB connection...")
+	if err != nil {
+		return
+	}
 }

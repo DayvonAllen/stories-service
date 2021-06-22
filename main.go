@@ -31,6 +31,7 @@ func main() {
 	go func() {
 		_ = <-c
 		fmt.Println("Shutting down...")
+		database.CloseConnection()
 		_ = app.Shutdown()
 	}()
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/app/database"
 	"example.com/app/domain"
+
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -61,6 +62,15 @@ func (u UserRepoImpl) UpdateByID(user *domain.User) error {
 
 	database.GetInstance().UserCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts)
+
+	return nil
+}
+
+func (u UserRepoImpl) DeleteByID(user *domain.User) error {
+	_, err := database.GetInstance().UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -28,5 +28,15 @@ func ProcessMessage(message domain.UserMessage) error {
 		return  nil
 	}
 
+	// 204 is the deleted messageType
+	if message.MessageType == 204 {
+		err := repo.UserRepoImpl{}.DeleteByID(&message.User)
+
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	return fmt.Errorf("cannot process this message")
 }

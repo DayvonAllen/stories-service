@@ -29,7 +29,6 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 	err = c.BodyParser(storyDto)
 
 	storyDto.AuthorUsername = u.Username
-	fmt.Println(u.Username)
 	storyDto.CreatedAt = time.Now()
 	storyDto.UpdatedAt = time.Now()
 
@@ -56,6 +55,42 @@ func (s *StoryHandler) FindAll(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": stories})
+}
+
+func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+	c.Accepts("application/json")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	storyDto := new(domain.UpdateStoryDto)
+
+	err = c.BodyParser(storyDto)
+
+	storyDto.UpdatedAt = time.Now()
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	data, err := s.StoryService.UpdateById(id, storyDto.Content, storyDto.Title, u.Username)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": &data})
 }
 
 func (s *StoryHandler) DeleteStory(c *fiber.Ctx) error {

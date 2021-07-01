@@ -23,17 +23,14 @@ type Story struct {
 }
 
 type StoryDto struct {
-	Id primitive.ObjectID        `json:"id"`
+	Id primitive.ObjectID        `bson:"_id" json:"id"`
 	Title string                 `json:"title"`
 	Content string               `json:"content"`
 	AuthorUsername string        `json:"authorUsername"`
 	Likes  int                   `json:"likes"`
 	Dislikes int                 `json:"dislikes"`
-	LikeCount int                `json:"likeCount"`
-	DislikeCount int             `json:"dislikeCount"`
-	Score int                    `json:"score"`
 	Tags []Tag	                 `json:"tags"`
-	Comments []Comment           `json:"comments"`
+	Comments []CommentDto           `json:"comments"`
 	CurrentUserLiked bool        `json:"currentUserLiked"`
 	CurrentUserDisLiked bool     `json:"currentUserDisLiked"`
 	CreatedAt time.Time          `json:"createdAt"`
@@ -49,9 +46,7 @@ type CreateStoryDto struct {
 }
 
 type UpdateStoryDto struct {
-	Id primitive.ObjectID        `bson:"_id" json:"id"`
 	Title string                 `bson:"title" json:"title"`
 	Content string               `bson:"content" json:"content"`
-	AuthorUsername string        `bson:"authorUsername" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
 }

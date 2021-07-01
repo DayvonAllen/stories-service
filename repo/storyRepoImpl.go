@@ -34,12 +34,12 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string) (*domain.StoryDto, error) {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string) (*domain.StoryDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{"_id", id}, {"authorUsername", username}}
 	update := bson.D{{"$set", bson.D{{"content", newContent},
 		{"title", newTitle},
 		{"updatedAt", time.Now()},
@@ -47,10 +47,10 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	}}
 
 	err := conn.StoriesCollection.FindOneAndUpdate(context.TODO(),
-		filter, update, opts).Decode(&s.Story)
+		filter, update, opts).Decode(&s.StoryDto)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("you can't update a story you didn't write")
 	}
 
 	return &s.StoryDto, nil

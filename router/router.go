@@ -23,6 +23,7 @@ func SetupRoutes(app *fiber.App) {
 
 	stories := api.Group("/stories")
 	stories.Post("/", sh.CreateStory)
+	stories.Put("/:id", sh.UpdateStory)
 	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
 	stories.Delete("/:id", sh.DeleteStory)
 

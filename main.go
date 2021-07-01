@@ -6,14 +6,12 @@ import (
 	"os"
 	"os/signal"
 
-	"example.com/app/database"
 	"example.com/app/events"
 	"example.com/app/router"
 )
 
 func init() {
 	// create database connection instance for first time
-	_ = database.GetInstance()
 	//err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
 	//if err != nil {
 	//	return
@@ -31,7 +29,6 @@ func main() {
 	go func() {
 		_ = <-c
 		fmt.Println("Shutting down...")
-		database.CloseConnection()
 		_ = app.Shutdown()
 	}()
 

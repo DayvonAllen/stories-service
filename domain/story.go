@@ -35,6 +35,6 @@ type StoryDto struct {
 	Score int                    `bson:"score" json:"score"`
 	Tags []primitive.ObjectID	 `bson:"tags" json:"tags"`
 	Comments []primitive.ObjectID `bson:"comments" json:"comments"`
-	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
-	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
+	CurrentUserLiked bool        `bson:"-" json:"currentUserLiked"`
+	CurrentUserDisLiked bool        `bson:"-" json:"currentUserDisLiked"`
 }

@@ -17,10 +17,12 @@ type DisLikeRepoImpl struct {
 }
 
 func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitive.ObjectID) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
 
 	// determine whether user already liked the story or not
 	story := new(domain.Story)
-	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyId}}).Decode(&story)
+	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyId}}).Decode(&story)
 	userLiked := false
 	likeList := make([]domain.Like, 0, story.LikeCount)
 	like := new(domain.Like)
@@ -31,7 +33,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitiv
 	query := bson.M{"authorUsername": bson.M{"$in": story.Likes}}
 
 	// Get all users
-	cur, err := database.GetInstance().StoriesCollection.Find(context.TODO(), query)
+	cur, err := conn.StoriesCollection.Find(context.TODO(), query)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -75,7 +77,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitiv
 		filter := bson.D{{"authorUsername", username}}
 		update := bson.D{{"$set", bson.D{{"likes", &likeList}}}}
 
-		err = database.GetInstance().LikesCollection.FindOneAndUpdate(context.TODO(),
+		err = conn.LikesCollection.FindOneAndUpdate(context.TODO(),
 			filter, update, opts).Decode(&like)
 
 		if err != nil {
@@ -88,7 +90,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitiv
 	d.DisLike.AuthorUsername = username
 	d.DisLike.CreatedAt = time.Now()
 
-	_, err = database.GetInstance().DislikesCollection.InsertOne(context.TODO(), &d.DisLike)
+	_, err = conn.DislikesCollection.InsertOne(context.TODO(), &d.DisLike)
 
 	if err != nil {
 		return err
@@ -97,7 +99,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitiv
 	filter := bson.D{{"_id", storyId}}
 	update := bson.M{"$push": bson.M{"dislikes": username}}
 
-	_, err = database.GetInstance().StoriesCollection.UpdateOne(context.TODO(),
+	_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
 		filter, update)
 
 	if err != nil {
@@ -108,10 +110,12 @@ func (d DisLikeRepoImpl) CreateDisLikeForStory(username string, storyId primitiv
 }
 
 func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId primitive.ObjectID) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
 
 	// determine whether user already liked the comment or not
 	comment := new(domain.Comment)
-	err := database.GetInstance().CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", commentId}}).Decode(&comment)
+	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", commentId}}).Decode(&comment)
 	userLiked := false
 	likeList := make([]domain.Like, 0, comment.LikeCount)
 	like := new(domain.Like)
@@ -122,7 +126,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 	query := bson.M{"authorUsername": bson.M{"$in": comment.Likes}}
 
 	// Get all users
-	cur, err := database.GetInstance().CommentsCollection.Find(context.TODO(), query)
+	cur, err := conn.CommentsCollection.Find(context.TODO(), query)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -166,7 +170,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 		filter := bson.D{{"authorUsername", username}}
 		update := bson.D{{"$set", bson.D{{"likes", &likeList}}}}
 
-		err = database.GetInstance().LikesCollection.FindOneAndUpdate(context.TODO(),
+		err = conn.LikesCollection.FindOneAndUpdate(context.TODO(),
 			filter, update, opts).Decode(&like)
 
 		if err != nil {
@@ -179,7 +183,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 	d.DisLike.AuthorUsername = username
 	d.DisLike.CreatedAt = time.Now()
 
-	_, err = database.GetInstance().DislikesCollection.InsertOne(context.TODO(), &d.DisLike)
+	_, err = conn.DislikesCollection.InsertOne(context.TODO(), &d.DisLike)
 
 	if err != nil {
 		return err
@@ -188,7 +192,7 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 	filter := bson.D{{"_id", commentId}}
 	update := bson.M{"$push": bson.M{"dislikes": username}}
 
-	_, err = database.GetInstance().CommentsCollection.UpdateOne(context.TODO(),
+	_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
 		filter, update)
 
 	if err != nil {
@@ -199,7 +203,10 @@ func (d DisLikeRepoImpl) CreateDisLikeForComment(username string, commentId prim
 }
 
 func (d DisLikeRepoImpl) DeleteByUsername(username string) error {
-	_, err := database.GetInstance().DislikesCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.DislikesCollection.DeleteOne(context.TODO(), bson.D{{"authorUsername", username}})
 	if err != nil {
 		return err
 	}

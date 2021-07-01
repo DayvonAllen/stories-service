@@ -17,8 +17,11 @@ type CommentRepoImpl struct {
 }
 
 func (c CommentRepoImpl) Create(comment *domain.Comment) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	story := new(domain.Story)
-	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(story)
+	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(story)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -31,14 +34,14 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	filter := bson.D{{"_id", story.Id}}
 	update := bson.M{"$push": bson.M{"comments": comment.Id}}
 
-	_, err = database.GetInstance().StoriesCollection.UpdateOne(context.TODO(),
+	_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
 		filter, update)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = database.GetInstance().CommentsCollection.InsertOne(context.TODO(), &comment)
+	_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
 
 	if err != nil {
 		return err
@@ -48,7 +51,10 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 }
 
 func (c CommentRepoImpl) FindById(commentID primitive.ObjectID) (*domain.Comment, error) {
-	err := database.GetInstance().CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", commentID}}).Decode(&c.Comment)
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", commentID}}).Decode(&c.Comment)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -62,8 +68,11 @@ func (c CommentRepoImpl) FindById(commentID primitive.ObjectID) (*domain.Comment
 }
 
 func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*[]domain.Comment, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	story := new(domain.Story)
-	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(story)
+	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(story)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -75,7 +84,7 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 
 	query := bson.M{"_id": bson.M{"$in": story.Comments}}
 
-	cur, err := database.GetInstance().CommentsCollection.Find(context.TODO(), query)
+	cur, err := conn.CommentsCollection.Find(context.TODO(), query)
 
 	if err != nil {
 		return nil, fmt.Errorf("error processing data")
@@ -113,11 +122,14 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 }
 
 func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{{"content", newContent}}}}
 
-	err := database.GetInstance().CommentsCollection.FindOneAndUpdate(context.TODO(),
+	err := conn.CommentsCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts).Decode(&c.Comment)
 
 	if err != nil {
@@ -128,7 +140,10 @@ func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string) (*
 }
 
 func (c CommentRepoImpl) DeleteById(id primitive.ObjectID) error {
-	_, err := database.GetInstance().CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
 	if err != nil {
 		return err
 	}

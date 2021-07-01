@@ -16,7 +16,10 @@ type TagRepoImpl struct {
 }
 
 func (t TagRepoImpl) Create(tag *domain.Tag) error {
-	err := database.GetInstance().TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tag.TagName}}).Decode(&t.Tag)
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	err := conn.TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tag.TagName}}).Decode(&t.Tag)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -25,7 +28,7 @@ func (t TagRepoImpl) Create(tag *domain.Tag) error {
 		}
 		return err
 	}
-	_, err = database.GetInstance().TagsCollection.InsertOne(context.TODO(), &tag)
+	_, err = conn.TagsCollection.InsertOne(context.TODO(), &tag)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -35,8 +38,10 @@ func (t TagRepoImpl) Create(tag *domain.Tag) error {
 }
 
 func (t TagRepoImpl) CreateMany(tags *[]interface{}) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := database.GetInstance().TagsCollection.InsertMany(context.TODO(), *tags)
+	_, err := conn.TagsCollection.InsertMany(context.TODO(), *tags)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -46,8 +51,10 @@ func (t TagRepoImpl) CreateMany(tags *[]interface{}) error {
 }
 
 func (t TagRepoImpl) FindByTagName(tagName string) (*domain.Tag, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
 
-	err := database.GetInstance().TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tagName}}).Decode(&t.Tag)
+	err := conn.TagsCollection.FindOne(context.TODO(), bson.D{{"tagName", tagName}}).Decode(&t.Tag)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -61,8 +68,11 @@ func (t TagRepoImpl) FindByTagName(tagName string) (*domain.Tag, error) {
 }
 
 func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	// Get all tags
-	cur, err := database.GetInstance().TagsCollection.Find(context.TODO(), bson.M{})
+	cur, err := conn.TagsCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, err
@@ -100,7 +110,10 @@ func (t TagRepoImpl) FindAll() (*[]domain.Tag, error) {
 }
 
 func (t TagRepoImpl) DeleteById(id primitive.ObjectID) error {
-	_, err := database.GetInstance().TagsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.TagsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
 	if err != nil {
 		return err
 	}

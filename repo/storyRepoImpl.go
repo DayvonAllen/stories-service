@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 )
 
 type StoryRepoImpl struct {
@@ -19,7 +20,10 @@ type StoryRepoImpl struct {
 }
 
 func (s StoryRepoImpl) Create(story *domain.Story) error {
-	_, err := database.GetInstance().StoriesCollection.InsertOne(context.TODO(), &story)
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.StoriesCollection.InsertOne(context.TODO(), &story)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -29,11 +33,14 @@ func (s StoryRepoImpl) Create(story *domain.Story) error {
 }
 
 func (s StoryRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*domain.Story, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{{"content", newContent}}}}
 
-	err := database.GetInstance().StoriesCollection.FindOneAndUpdate(context.TODO(),
+	err := conn.StoriesCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts).Decode(&s.Story)
 
 	if err != nil {
@@ -43,33 +50,29 @@ func (s StoryRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*do
 	return &s.Story, nil
 }
 
-func (s StoryRepoImpl) FindAll() (*[]domain.Story, error) {
+func (s StoryRepoImpl) FindAll() (*[]domain.StoryDto, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	//findOptions := options.FindOptions{}
+	//perPage := 10
+	//pageNumber, err := strconv.Atoi(page)
+
+	//if err != nil {
+	//	return nil, fmt.Errorf("page must be a number")
+	//}
+	//findOptions.SetSkip((int64(pageNumber) - 1) * int64(perPage))
+	//findOptions.SetLimit(int64(perPage))
+
 	// Get all tags
-	cur, err := database.GetInstance().StoriesCollection.Find(context.TODO(), bson.M{})
+	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	// Finding multiple documents returns a cursor
-	// Iterating through the cursor allows us to decode documents one at a time
-	for cur.Next(context.TODO()) {
-
-		// create a value into which the single document can be decoded
-		var elem domain.Story
-		err = cur.Decode(&elem)
-
-		if err != nil {
-			return nil, fmt.Errorf("error processing data")
-		}
-
-		s.StoryList = append(s.StoryList, elem)
-	}
-
-	err = cur.Err()
-
-	if err != nil {
-		return nil, fmt.Errorf("error processing data")
+	if err = cur.All(context.TODO(), &s.StoryDtoList); err != nil {
+		log.Fatal(err)
 	}
 
 	// Close the cursor once finished
@@ -79,11 +82,14 @@ func (s StoryRepoImpl) FindAll() (*[]domain.Story, error) {
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	return &s.StoryList, nil
+	return &s.StoryDtoList, nil
 }
 
-func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.Story, error) {
-	err := database.GetInstance().StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&s.Story)
+func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&s.StoryDto)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -93,11 +99,14 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.Story, erro
 		return  nil, fmt.Errorf("error processing data")
 	}
 
-	return &s.Story, nil
+	return &s.StoryDto, nil
 }
 
 func (s StoryRepoImpl) DeleteByID(id primitive.ObjectID) error {
-	_, err := database.GetInstance().StoriesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.StoriesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
 	if err != nil {
 		return err
 	}

@@ -16,7 +16,10 @@ type UserRepoImpl struct {
 }
 
 func (u UserRepoImpl) Create(user *domain.User) error {
-	cur, err := database.GetInstance().UserCollection.Find(context.TODO(), bson.M{
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	cur, err := conn.UserCollection.Find(context.TODO(), bson.M{
 		"$or": []interface{}{
 			bson.M{"email": user.Email},
 			bson.M{"username": user.Username},
@@ -29,7 +32,7 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 	}
 
 	if !cur.Next(context.TODO()) {
-		_, err = database.GetInstance().UserCollection.InsertOne(context.TODO(), &user)
+		_, err = conn.UserCollection.InsertOne(context.TODO(), &user)
 
 		if err != nil {
 			return fmt.Errorf("error processing data")
@@ -42,7 +45,10 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 }
 
 func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
-	err := database.GetInstance().UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.user)
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	err := conn.UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.user)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -56,18 +62,24 @@ func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
 }
 
 func (u UserRepoImpl) UpdateByID(user *domain.User) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", user.Id}}
 	update := bson.D{{"$set", user}}
 
-	database.GetInstance().UserCollection.FindOneAndUpdate(context.TODO(),
+	conn.UserCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts)
 
 	return nil
 }
 
 func (u UserRepoImpl) DeleteByID(user *domain.User) error {
-	_, err := database.GetInstance().UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
 	if err != nil {
 		return err
 	}

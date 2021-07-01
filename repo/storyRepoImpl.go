@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -55,21 +56,21 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	return &s.StoryDto, nil
 }
 
-func (s StoryRepoImpl) FindAll() (*[]domain.Story, error) {
+func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	//findOptions := options.FindOptions{}
-	//perPage := 10
-	//pageNumber, err := strconv.Atoi(page)
+	findOptions := options.FindOptions{}
+	perPage := 10
+	pageNumber, err := strconv.Atoi(page)
 
-	//if err != nil {
-	//	return nil, fmt.Errorf("page must be a number")
-	//}
-	//findOptions.SetSkip((int64(pageNumber) - 1) * int64(perPage))
-	//findOptions.SetLimit(int64(perPage))
+	if err != nil {
+		return nil, fmt.Errorf("page must be a number")
+	}
+	findOptions.SetSkip((int64(pageNumber) - 1) * int64(perPage))
+	findOptions.SetLimit(int64(perPage))
 
-	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{})
+	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{}, &findOptions)
 
 	if err != nil {
 		return nil, err

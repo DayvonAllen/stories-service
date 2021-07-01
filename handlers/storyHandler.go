@@ -47,7 +47,9 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 }
 
 func (s *StoryHandler) FindAll(c *fiber.Ctx) error {
-	stories, err := s.StoryService.FindAll()
+	page := c.Query("page", "1")
+
+	stories, err := s.StoryService.FindAll(page)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

@@ -49,7 +49,7 @@ func (t *TagHandler) FindAll(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "success", "data": tags})
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": tags})
 }
 
 func (t *TagHandler) DeleteById(c *fiber.Ctx) error {

@@ -6,35 +6,52 @@ import (
 )
 
 type Story struct {
-	Id        primitive.ObjectID `bson:"_id" json:"id"`
+	Id primitive.ObjectID        `bson:"_id" json:"id"`
 	Title string                 `bson:"title" json:"title"`
 	Content string               `bson:"content" json:"content"`
-	AuthorId primitive.ObjectID  `bson:"authorId" json:"authorId"`
-	Likes  []primitive.ObjectID   `bson:"likes" json:"likes"`
+	AuthorUsername string  		 `bson:"authorUsername" json:"authorUsername"`
+	Likes  []primitive.ObjectID  `bson:"likes" json:"likes"`
 	Dislikes []primitive.ObjectID  `bson:"dislikes" json:"dislikes"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
 	FlagCount []primitive.ObjectID	`bson:"flagCount" json:"-"`
-	Score int                    `bson:"score" json:"score"`
+	Score int                    `bson:"score" json:"-"`
 	Tags []primitive.ObjectID	 `bson:"tags" json:"tags"`
 	Comments []primitive.ObjectID `bson:"comments" json:"comments"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
+}
+
+type StoryDto struct {
+	Id primitive.ObjectID        `json:"id"`
+	Title string                 `json:"title"`
+	Content string               `json:"content"`
+	AuthorUsername string        `json:"authorUsername"`
+	Likes  int                   `json:"likes"`
+	Dislikes int                 `json:"dislikes"`
+	LikeCount int                `json:"likeCount"`
+	DislikeCount int             `json:"dislikeCount"`
+	Score int                    `json:"score"`
+	Tags []Tag	                 `json:"tags"`
+	Comments []Comment           `json:"comments"`
+	CurrentUserLiked bool        `json:"currentUserLiked"`
+	CurrentUserDisLiked bool     `json:"currentUserDisLiked"`
+	CreatedAt time.Time          `json:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt"`
+}
+
+type CreateStoryDto struct {
+	Title string                 `bson:"title" json:"title"`
+	Content string               `bson:"content" json:"content"`
+	AuthorUsername string        `bson:"authorUsername" json:"-"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
 }
 
-type StoryDto struct {
-	Id        primitive.ObjectID `bson:"_id" json:"id"`
+type UpdateStoryDto struct {
+	Id primitive.ObjectID        `bson:"_id" json:"id"`
 	Title string                 `bson:"title" json:"title"`
 	Content string               `bson:"content" json:"content"`
-	AuthorId primitive.ObjectID  `bson:"authorId" json:"authorId"`
-	Likes  []primitive.ObjectID   `bson:"likes" json:"likes"`
-	Dislikes []primitive.ObjectID  `bson:"dislikes" json:"dislikes"`
-	LikeCount int                `bson:"likeCount" json:"likeCount"`
-	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
-	FlagCount []primitive.ObjectID	`bson:"flagCount" json:"-"`
-	Score int                    `bson:"score" json:"score"`
-	Tags []primitive.ObjectID	 `bson:"tags" json:"tags"`
-	Comments []primitive.ObjectID `bson:"comments" json:"comments"`
-	CurrentUserLiked bool        `bson:"-" json:"currentUserLiked"`
-	CurrentUserDisLiked bool        `bson:"-" json:"currentUserDisLiked"`
+	AuthorUsername string        `bson:"authorUsername" json:"-"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
 }

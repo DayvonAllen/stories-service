@@ -7,20 +7,53 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Authentication struct {
 	Id primitive.ObjectID
-	Email string
+	Username string `bson:"username" json:"username"`
+}
+
+type LoginDetails struct {
+	Email string `bson:"email" json:"email"`
+	//Username string `bson:"username" json:"username"`
+	Password string `bson:"password" json:"password"`
 }
 
 type Claims struct {
 	jwt.StandardClaims
-	Id primitive.ObjectID
-	Email string
+	Id       primitive.ObjectID
+	Username string
 }
 
 var k = config.Config("SECRET")
+
+func (l Authentication) GenerateJWT(msg User) (string, error){
+	e, err := strconv.Atoi(config.Config("EXPIRATION"))
+
+	if err != nil {
+		return "", err
+	}
+
+	claims := Claims{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Duration(e) * time.Minute).Unix(),
+		},
+		Id:       msg.Id,
+		Username: msg.Username,
+	}
+	// always better to use a pointer with JSON
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
+	signedString, err := token.SignedString([]byte(k))
+
+	if err != nil {
+		return "", err
+	}
+	return signedString, nil
+}
 
 func (l Authentication) SignToken(token []byte) ([]byte, error) {
 	// second arg is a private key, key needs to be the same size as hasher
@@ -84,7 +117,7 @@ func(l Authentication) IsLoggedIn(tokenValue string) (*Authentication, bool, err
 		claims := token.Claims.(*Claims)
 
 		l.Id = claims.Id
-		l.Email = claims.Email
+		l.Username = strings.ToLower(claims.Username)
 		return &l, true, nil
 	}
 

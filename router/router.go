@@ -16,13 +16,16 @@ func SetupRoutes(app *fiber.App) {
 	dh := handlers.DisLikeHandler{DisLikeService: services.NewDisLikeService(repo.NewDisLikeRepoImpl())}
 	ch := handlers.CommentHandler{CommentService: services.NewCommentService(repo.NewCommentRepoImpl())}
 	th := handlers.TagHandler{TagService: services.NewTagService(repo.NewTagRepoImpl())}
+	sh := handlers.StoryHandler{StoryService: services.NewStoryService(repo.NewStoryRepoImpl())}
 
 	app.Use(recover.New())
 	api := app.Group("", logger.New())
 
-	//stories := api.Group("/stories")
-	////stories.Get("/")
-	//fmt.Println(stories)
+	stories := api.Group("/stories")
+	stories.Post("/", sh.CreateStory)
+	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
+	stories.Delete("/:id", sh.DeleteStory)
+
 
 	tags := api.Group("/tags")
 	tags.Get("/", middleware.IsLoggedIn, th.FindAll)

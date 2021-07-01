@@ -10,16 +10,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"time"
 )
 
 type StoryRepoImpl struct {
-	Story domain.Story
-	StoryDto domain.StoryDto
-	StoryList []domain.Story
+	Story        domain.Story
+	StoryDto     domain.StoryDto
+	StoryList    []domain.Story
 	StoryDtoList []domain.StoryDto
 }
 
-func (s StoryRepoImpl) Create(story *domain.Story) error {
+func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -32,13 +33,17 @@ func (s StoryRepoImpl) Create(story *domain.Story) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*domain.Story, error) {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string) (*domain.StoryDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}}
-	update := bson.D{{"$set", bson.D{{"content", newContent}}}}
+	update := bson.D{{"$set", bson.D{{"content", newContent},
+		{"title", newTitle},
+		{"updatedAt", time.Now()},
+	},
+	}}
 
 	err := conn.StoriesCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts).Decode(&s.Story)
@@ -47,10 +52,10 @@ func (s StoryRepoImpl) UpdateByID(id primitive.ObjectID, newContent string) (*do
 		return nil, err
 	}
 
-	return &s.Story, nil
+	return &s.StoryDto, nil
 }
 
-func (s StoryRepoImpl) FindAll() (*[]domain.StoryDto, error) {
+func (s StoryRepoImpl) FindAll() (*[]domain.Story, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -64,14 +69,13 @@ func (s StoryRepoImpl) FindAll() (*[]domain.StoryDto, error) {
 	//findOptions.SetSkip((int64(pageNumber) - 1) * int64(perPage))
 	//findOptions.SetLimit(int64(perPage))
 
-	// Get all tags
 	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err = cur.All(context.TODO(), &s.StoryDtoList); err != nil {
+	if err = cur.All(context.TODO(), &s.StoryList); err != nil {
 		log.Fatal(err)
 	}
 
@@ -82,7 +86,7 @@ func (s StoryRepoImpl) FindAll() (*[]domain.StoryDto, error) {
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	return &s.StoryDtoList, nil
+	return &s.StoryList, nil
 }
 
 func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, error) {
@@ -96,20 +100,26 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, e
 		if err == mongo.ErrNoDocuments {
 			return nil, err
 		}
-		return  nil, fmt.Errorf("error processing data")
+		return nil, fmt.Errorf("error processing data")
 	}
 
 	return &s.StoryDto, nil
 }
 
-func (s StoryRepoImpl) DeleteByID(id primitive.ObjectID) error {
+func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := conn.StoriesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	res, err := conn.StoriesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+
 	if err != nil {
 		return err
 	}
+
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("you can't delete a story that you didn't create")
+	}
+
 	return nil
 }
 
@@ -118,4 +128,3 @@ func NewStoryRepoImpl() StoryRepoImpl {
 
 	return storyRepoImpl
 }
-

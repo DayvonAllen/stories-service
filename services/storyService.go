@@ -7,27 +7,27 @@ import (
 )
 
 type StoryService interface {
-	Create(id primitive.ObjectID) error
-	UpdateById(primitive.ObjectID, string) (*domain.Story, error)
+	Create(dto *domain.CreateStoryDto) error
+	UpdateById(primitive.ObjectID, string, string) (*domain.StoryDto, error)
 	FindAll() (*[]domain.Story, error)
-	FindById(primitive.ObjectID) (*domain.Story, error)
-	DeleteById(primitive.ObjectID) error
+	FindById(primitive.ObjectID) (*domain.StoryDto, error)
+	DeleteById(primitive.ObjectID, string) error
 }
 
 type DefaultStoryService struct {
 	repo repo.StoryRepo
 }
 
-func (s DefaultStoryService) Create(id primitive.ObjectID) error {
-	err := s.repo.Create(id)
+func (s DefaultStoryService) Create(story *domain.CreateStoryDto) error {
+	err := s.repo.Create(story)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string) (*domain.Story, error) {
-	story, err := s.repo.UpdateById(id, newContent)
+func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string, newTitle string) (*domain.StoryDto, error) {
+	story, err := s.repo.UpdateById(id, newContent, newTitle)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (s DefaultStoryService) FindAll() (*[]domain.Story, error) {
 	return story, nil
 }
 
-func (s DefaultStoryService) FindById(id primitive.ObjectID) (*domain.Story, error) {
+func (s DefaultStoryService) FindById(id primitive.ObjectID) (*domain.StoryDto, error) {
 	story, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (s DefaultStoryService) FindById(id primitive.ObjectID) (*domain.Story, err
 	return story, nil
 }
 
-func (s DefaultStoryService) DeleteById(id primitive.ObjectID) error {
-	err := s.repo.DeleteById(id)
+func (s DefaultStoryService) DeleteById(id primitive.ObjectID, username string) error {
+	err := s.repo.DeleteById(id, username)
 	if err != nil {
 		return err
 	}

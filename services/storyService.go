@@ -8,8 +8,10 @@ import (
 
 type StoryService interface {
 	Create(dto *domain.CreateStoryDto) error
-	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag) (*domain.StoryDto, error)
+	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag)  error
 	FindAll(string) (*[]domain.Story, error)
+	LikeStoryById(primitive.ObjectID, string) error
+	DisLikeStoryById(primitive.ObjectID, string) error
 	FindById(primitive.ObjectID) (*domain.StoryDto, error)
 	DeleteById(primitive.ObjectID, string) error
 }
@@ -26,12 +28,12 @@ func (s DefaultStoryService) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag) (*domain.StoryDto, error) {
-	story, err := s.repo.UpdateById(id, newContent, newTitle, username, tags)
+func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag) error {
+	err := s.repo.UpdateById(id, newContent, newTitle, username, tags)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return story, nil
+	return nil
 }
 
 func (s DefaultStoryService) FindAll(page string) (*[]domain.Story, error) {
@@ -48,6 +50,22 @@ func (s DefaultStoryService) FindById(id primitive.ObjectID) (*domain.StoryDto, 
 		return nil, err
 	}
 	return story, nil
+}
+
+func (s DefaultStoryService) LikeStoryById(id primitive.ObjectID, username string) error {
+	err := s.repo.LikeStoryById(id, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s DefaultStoryService) DisLikeStoryById(id primitive.ObjectID, username string) error {
+	err := s.repo.DisLikeStoryById(id, username)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s DefaultStoryService) DeleteById(id primitive.ObjectID, username string) error {

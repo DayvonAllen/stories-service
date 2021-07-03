@@ -7,8 +7,10 @@ import (
 
 type StoryRepo interface {
 	 Create(story *domain.CreateStoryDto) error
-	 UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag) (*domain.StoryDto, error)
+	 UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag) error
 	 FindAll(string) (*[]domain.Story, error)
+	 LikeStoryById(primitive.ObjectID, string) error
+	 DisLikeStoryById(primitive.ObjectID, string) error
 	 FindById(primitive.ObjectID) (*domain.StoryDto, error)
 	 DeleteById(primitive.ObjectID, string) error
 }

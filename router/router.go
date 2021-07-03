@@ -12,8 +12,6 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-	lh := handlers.LikeHandler{LikeService: services.NewLikeService(repo.NewLikeRepoImpl())}
-	dh := handlers.DisLikeHandler{DisLikeService: services.NewDisLikeService(repo.NewDisLikeRepoImpl())}
 	ch := handlers.CommentHandler{CommentService: services.NewCommentService(repo.NewCommentRepoImpl())}
 	sh := handlers.StoryHandler{StoryService: services.NewStoryService(repo.NewStoryRepoImpl())}
 
@@ -23,18 +21,10 @@ func SetupRoutes(app *fiber.App) {
 	stories := api.Group("/stories")
 	stories.Post("/", sh.CreateStory)
 	stories.Put("/:id", sh.UpdateStory)
+	stories.Put("/like/:id", sh.LikeStory)
+	stories.Put("/dislike/:id", sh.DisLikeStory)
 	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
 	stories.Delete("/:id", sh.DeleteStory)
-
-	likes := api.Group("/likes")
-	likes.Post("/story", middleware.IsLoggedIn, lh.CreateLikeForStory)
-	likes.Post("/comment", middleware.IsLoggedIn, lh.CreateLikeForComment)
-	likes.Delete("/", middleware.IsLoggedIn, lh.DeleteLikeByUsername)
-
-	disLikes := api.Group("/dislike")
-	disLikes.Post("/story", middleware.IsLoggedIn, dh.CreateDisLikeForStory)
-	disLikes.Post("/comment", middleware.IsLoggedIn, dh.CreateDisLikeForComment)
-	disLikes.Delete("/", middleware.IsLoggedIn, dh.DeleteDisLikeByUsername)
 
 	comments := api.Group("/comment")
 	comments.Post("/", middleware.IsLoggedIn, ch.CreateComment)

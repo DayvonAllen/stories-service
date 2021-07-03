@@ -11,8 +11,8 @@ type Story struct {
 	Title string                 `bson:"title" json:"title"`
 	Content string               `bson:"content" json:"content"`
 	AuthorUsername string  		 `bson:"authorUsername" json:"authorUsername"`
-	Likes  []primitive.ObjectID  `bson:"likes" json:"likes"`
-	Dislikes []primitive.ObjectID  `bson:"dislikes" json:"dislikes"`
+	Likes  []string  `bson:"likes" json:"likes"`
+	Dislikes []string  `bson:"dislikes" json:"dislikes"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
 	FlagCount []primitive.ObjectID	`bson:"flagCount" json:"-"`
@@ -42,6 +42,8 @@ type CreateStoryDto struct {
 	Title string                 `bson:"title" json:"title"`
 	Content string               `bson:"content" json:"content"`
 	AuthorUsername string        `bson:"authorUsername" json:"-"`
+	Likes  []string  `bson:"likes" json:"-"`
+	Dislikes []string  `bson:"dislikes" json:"-"`
 	Tags []Tag	                 `json:"tags"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`

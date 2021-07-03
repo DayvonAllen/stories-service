@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"log"
 	"strconv"
 	"time"
@@ -34,11 +36,11 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag) (*domain.StoryDto, error) {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag)  error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	opts := options.FindOneAndUpdate().SetUpsert(true)
+
 	filter := bson.D{{"_id", id}, {"authorUsername", username}}
 	update := bson.D{{"$set",
 		bson.D{{"content", newContent},
@@ -48,14 +50,14 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	},
 	}}
 
-	err := conn.StoriesCollection.FindOneAndUpdate(context.TODO(),
-		filter, update, opts).Decode(&s.StoryDto)
+	_, err := conn.StoriesCollection.UpdateOne(context.TODO(),
+		filter, update)
 
 	if err != nil {
-		return nil, fmt.Errorf("you can't update a story you didn't write")
+		return fmt.Errorf("you can't update a story you didn't write")
 	}
 
-	return &s.StoryDto, nil
+	return nil
 }
 
 func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
@@ -90,6 +92,162 @@ func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
 	}
 
 	return &s.StoryList, nil
+}
+
+func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	ctx := context.TODO()
+
+	cur, err := conn.StoriesCollection.Find(ctx, bson.D{
+		{"_id", storyId}, {"likes", username},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if cur.Next(ctx) {
+		return fmt.Errorf("you've already liked this story")
+	}
+
+	// sets mongo's read and write concerns
+	wc := writeconcern.New(writeconcern.WMajority())
+	rc := readconcern.Snapshot()
+	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
+
+	// set up for a transaction
+	session, err := conn.StartSession()
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.EndSession(context.Background())
+
+	// execute this code in a logical transaction
+	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
+
+		filter := bson.D{{"_id", storyId}}
+		update := bson.M{"$pull": bson.M{"dislikes": username}}
+
+		res, err := conn.StoriesCollection.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if res.MatchedCount == 0 {
+			return nil, fmt.Errorf("cannot find story")
+		}
+
+		err = conn.StoriesCollection.FindOne(context.TODO(),
+			filter).Decode(&s.Story)
+
+		s.Story.DislikeCount = len(s.Story.Dislikes)
+
+		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1},  "$set": bson.M{"dislikeCount": s.Story.DislikeCount}}
+
+		filter = bson.D{{"_id", storyId}}
+		fmt.Println(s.Story.DislikeCount)
+
+		_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
+			filter, update)
+		fmt.Println(s.Story.DislikeCount)
+
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(s.Story.DislikeCount)
+
+
+		return nil, err
+	}
+
+	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
+
+	if err != nil {
+		return fmt.Errorf("failed to like story")
+	}
+
+	return nil
+}
+
+func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username string) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	ctx := context.TODO()
+
+	cur, err := conn.StoriesCollection.Find(ctx, bson.D{
+		{"_id", storyId}, {"dislikes", username},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if cur.Next(ctx) {
+		return fmt.Errorf("you've already disliked this story")
+	}
+
+	// sets mongo's read and write concerns
+	wc := writeconcern.New(writeconcern.WMajority())
+	rc := readconcern.Snapshot()
+	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
+
+	// set up for a transaction
+	session, err := conn.StartSession()
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.EndSession(context.Background())
+
+	// execute this code in a logical transaction
+	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
+
+		filter := bson.D{{"_id", storyId}}
+		update := bson.M{"$pull": bson.M{"likes": username}}
+
+		res, err := conn.StoriesCollection.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if res.MatchedCount == 0 {
+			return nil, fmt.Errorf("cannot find story")
+		}
+
+		err = conn.StoriesCollection.FindOne(context.TODO(),
+			filter).Decode(&s.Story)
+
+		s.Story.LikeCount = len(s.Story.Likes)
+
+		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1},  "$set": bson.M{"likeCount": s.Story.LikeCount}}
+
+		filter = bson.D{{"_id", storyId}}
+
+		_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
+			filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
+
+	if err != nil {
+		return fmt.Errorf("failed to dislike story")
+	}
+
+	return nil
 }
 
 func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, error) {

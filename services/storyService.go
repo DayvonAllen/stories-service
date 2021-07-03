@@ -8,7 +8,7 @@ import (
 
 type StoryService interface {
 	Create(dto *domain.CreateStoryDto) error
-	UpdateById(primitive.ObjectID, string, string, string) (*domain.StoryDto, error)
+	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag) (*domain.StoryDto, error)
 	FindAll(string) (*[]domain.Story, error)
 	FindById(primitive.ObjectID) (*domain.StoryDto, error)
 	DeleteById(primitive.ObjectID, string) error
@@ -26,8 +26,8 @@ func (s DefaultStoryService) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string) (*domain.StoryDto, error) {
-	story, err := s.repo.UpdateById(id, newContent, newTitle, username)
+func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag) (*domain.StoryDto, error) {
+	story, err := s.repo.UpdateById(id, newContent, newTitle, username, tags)
 	if err != nil {
 		return nil, err
 	}

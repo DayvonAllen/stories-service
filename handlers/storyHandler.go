@@ -40,7 +40,7 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 
 	t := new(domain.Tag)
 	for _, tag := range storyDto.Tags {
-		_, err := tag.ValidateTag(t)
+		err = tag.ValidateTag(t)
 		if err != nil {
 			return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 		}
@@ -98,7 +98,21 @@ func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	data, err := s.StoryService.UpdateById(id, storyDto.Content, storyDto.Title, u.Username)
+	tagLength := len(storyDto.Tags)
+
+	if tagLength < 1 {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("story must have at least one tag")})
+	}
+
+	t := new(domain.Tag)
+	for _, tag := range storyDto.Tags {
+		err = tag.ValidateTag(t)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+		}
+	}
+
+	data, err := s.StoryService.UpdateById(id, storyDto.Content, storyDto.Title, u.Username, &storyDto.Tags)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

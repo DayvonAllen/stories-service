@@ -34,15 +34,17 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string) (*domain.StoryDto, error) {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag) (*domain.StoryDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}, {"authorUsername", username}}
-	update := bson.D{{"$set", bson.D{{"content", newContent},
+	update := bson.D{{"$set",
+		bson.D{{"content", newContent},
 		{"title", newTitle},
 		{"updatedAt", time.Now()},
+		{"tags", tags},
 	},
 	}}
 

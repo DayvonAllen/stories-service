@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Dislike todo validate struct
 type Dislike struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
 	AuthorUsername  string `bson:"authorUsername" json:"authorUsername"`

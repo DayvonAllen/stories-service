@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Comment todo validate struct
 type Comment struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
 	StoryId        primitive.ObjectID `bson:"storyId" json:"storyId"`

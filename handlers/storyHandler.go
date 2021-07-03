@@ -32,6 +32,20 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 	storyDto.CreatedAt = time.Now()
 	storyDto.UpdatedAt = time.Now()
 
+	tagLength := len(storyDto.Tags)
+
+	if tagLength < 1 {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("story must have at least one tag")})
+	}
+
+	t := new(domain.Tag)
+	for _, tag := range storyDto.Tags {
+		_, err := tag.ValidateTag(t)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+		}
+	}
+
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}

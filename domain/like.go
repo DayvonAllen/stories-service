@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Like todo validate struct
 type Like struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
 	AuthorUsername  string `bson:"authorUsername" json:"authorUsername"`

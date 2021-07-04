@@ -77,5 +77,5 @@ type UpdateStoryDto struct {
 	Content string               `bson:"content" json:"content"`
 	Tags []Tag	                 `json:"tags"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
-	UpdatedDate string 			 `bson:"updatedDate" json:"updatedDate"`
+	UpdatedDate string 			 `bson:"updatedDate" json:"-"`
 }

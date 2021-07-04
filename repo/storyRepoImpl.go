@@ -146,15 +146,14 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 			filter).Decode(&s.Story)
 
 		s.Story.DislikeCount = len(s.Story.Dislikes)
+		s.Story.Score++
 
-		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1},  "$set": bson.M{"dislikeCount": s.Story.DislikeCount}}
+		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1},  "$set": bson.D{{"dislikeCount", s.Story.DislikeCount}, {"score", s.Story.Score}}}
 
 		filter = bson.D{{"_id", storyId}}
-		fmt.Println(s.Story.DislikeCount)
 
 		_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
 			filter, update)
-		fmt.Println(s.Story.DislikeCount)
 
 		if err != nil {
 			return nil, err
@@ -226,8 +225,9 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 			filter).Decode(&s.Story)
 
 		s.Story.LikeCount = len(s.Story.Likes)
+		s.Story.Score--
 
-		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1},  "$set": bson.M{"likeCount": s.Story.LikeCount}}
+		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1},  "$set": bson.D{{"likeCount", s.Story.LikeCount}, {"score", s.Story.Score}}}
 
 		filter = bson.D{{"_id", storyId}}
 

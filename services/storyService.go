@@ -12,7 +12,7 @@ type StoryService interface {
 	FindAll(string) (*[]domain.Story, error)
 	LikeStoryById(primitive.ObjectID, string) error
 	DisLikeStoryById(primitive.ObjectID, string) error
-	FindById(primitive.ObjectID) (*domain.StoryDto, error)
+	FindById(primitive.ObjectID, string) (*domain.StoryDto, error)
 	DeleteById(primitive.ObjectID, string) error
 }
 
@@ -44,8 +44,8 @@ func (s DefaultStoryService) FindAll(page string) (*[]domain.Story, error) {
 	return story, nil
 }
 
-func (s DefaultStoryService) FindById(id primitive.ObjectID) (*domain.StoryDto, error) {
-	story, err := s.repo.FindById(id)
+func (s DefaultStoryService) FindById(id primitive.ObjectID, username string) (*domain.StoryDto, error) {
+	story, err := s.repo.FindById(id, username)
 	if err != nil {
 		return nil, err
 	}

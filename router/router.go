@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App) {
 	stories.Put("/like/:id", sh.LikeStory)
 	stories.Put("/dislike/:id", sh.DisLikeStory)
 	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
+	stories.Get("/:id", sh.FindStory)
 	stories.Delete("/:id", sh.DeleteStory)
 
 	comments := api.Group("/comment")

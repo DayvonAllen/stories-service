@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/app/database"
 	"example.com/app/domain"
+	"example.com/app/helper"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -158,8 +159,6 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(s.Story.DislikeCount)
-
 
 		return nil, err
 	}
@@ -250,7 +249,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 	return nil
 }
 
-func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, error) {
+func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*domain.StoryDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -262,6 +261,12 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID) (*domain.StoryDto, e
 			return nil, err
 		}
 		return nil, fmt.Errorf("error processing data")
+	}
+
+	s.StoryDto.CurrentUserLiked = helper.CurrentUserStoryInteraction(s.StoryDto.Likes, username)
+
+	if !s.StoryDto.CurrentUserLiked {
+		s.StoryDto.CurrentUserDisLiked = helper.CurrentUserStoryInteraction(s.StoryDto.Dislikes, username)
 	}
 
 	return &s.StoryDto, nil

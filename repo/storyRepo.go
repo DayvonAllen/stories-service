@@ -11,6 +11,6 @@ type StoryRepo interface {
 	 FindAll(string) (*[]domain.Story, error)
 	 LikeStoryById(primitive.ObjectID, string) error
 	 DisLikeStoryById(primitive.ObjectID, string) error
-	 FindById(primitive.ObjectID) (*domain.StoryDto, error)
+	 FindById(primitive.ObjectID, string) (*domain.StoryDto, error)
 	 DeleteById(primitive.ObjectID, string) error
 }

@@ -123,6 +123,31 @@ func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
+func (s *StoryHandler) FindStory(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	story, err := s.StoryService.FindById(id, u.Username)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": &story})
+}
+
 func (s *StoryHandler) LikeStory(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 

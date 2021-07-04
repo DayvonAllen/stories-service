@@ -28,8 +28,10 @@ type StoryDto struct {
 	Title string                 `json:"title"`
 	Content string               `json:"content"`
 	AuthorUsername string        `json:"authorUsername"`
-	Likes  int                   `json:"likes"`
-	Dislikes int                 `json:"dislikes"`
+	Likes  []string  			 `bson:"likes" json:"-"`
+	Dislikes []string  			 `bson:"dislikes" json:"-"`
+	LikeCount  int                   `json:"likes"`
+	DislikeCount int                 `json:"dislikes"`
 	Tags []Tag	                 `json:"tags"`
 	Comments []CommentDto           `json:"comments"`
 	CurrentUserLiked bool        `json:"currentUserLiked"`

@@ -19,8 +19,10 @@ type Story struct {
 	Score int                    `bson:"score" json:"-"`
 	Tags []Tag	 			 `bson:"tags" json:"tags"`
 	Comments []primitive.ObjectID `bson:"comments" json:"comments"`
-	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
+	CreatedAt time.Time          `bson:"createdAt" json:"-"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
+	CreatedDate string 			 `bson:"createdDate" json:"createdDate"`
+	UpdatedDate string 			 `bson:"updatedDate" json:"updatedDate"`
 }
 
 type StoryDto struct {
@@ -36,8 +38,10 @@ type StoryDto struct {
 	Comments []CommentDto           `json:"comments"`
 	CurrentUserLiked bool        `json:"currentUserLiked"`
 	CurrentUserDisLiked bool     `json:"currentUserDisLiked"`
-	CreatedAt time.Time          `json:"createdAt"`
-	UpdatedAt time.Time          `json:"updatedAt"`
+	CreatedAt time.Time          `json:"-"`
+	UpdatedAt time.Time          `json:"-"`
+	CreatedDate string 			 `json:"createdDate"`
+	UpdatedDate string 			 `json:"updatedDate"`
 }
 
 type FeaturedStoryDto struct {
@@ -48,8 +52,10 @@ type FeaturedStoryDto struct {
 	LikeCount  int               `json:"likes"`
 	DislikeCount int             `json:"dislikes"`
 	Tags []Tag	                 `json:"tags"`
-	CreatedAt time.Time          `json:"createdAt"`
-	UpdatedAt time.Time          `json:"updatedAt"`
+	CreatedAt time.Time          `json:"-"`
+	UpdatedAt time.Time          `json:"-"`
+	CreatedDate string 			 `json:"createdDate"`
+	UpdatedDate string 			 `json:"updatedDate"`
 }
 
 
@@ -62,6 +68,8 @@ type CreateStoryDto struct {
 	Tags []Tag	                 `json:"tags"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
+	CreatedDate string 			 `bson:"createdDate" json:"createdDate"`
+	UpdatedDate string 			 `bson:"updatedDate" json:"updatedDate"`
 }
 
 type UpdateStoryDto struct {
@@ -69,4 +77,5 @@ type UpdateStoryDto struct {
 	Content string               `bson:"content" json:"content"`
 	Tags []Tag	                 `json:"tags"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
+	UpdatedDate string 			 `bson:"updatedDate" json:"updatedDate"`
 }

@@ -40,6 +40,7 @@
     - `DELETE:http://localhost:8081/stories/<story ID>`
 - Update Story:
     - `PUT:http://localhost:8081/stories/<Story ID>`
+    - JSON:
 ```
 {
     "content": "updated content",

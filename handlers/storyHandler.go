@@ -34,6 +34,8 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 	storyDto.UpdatedAt = time.Now()
 	storyDto.Likes = make([]string, 0)
 	storyDto.Dislikes = make([]string, 0)
+	storyDto.CreatedDate = storyDto.CreatedAt.Format("January 2, 2006")
+	storyDto.UpdatedDate = storyDto.UpdatedAt.Format("January 2, 2006")
 
 	tagLength := len(storyDto.Tags)
 
@@ -108,6 +110,7 @@ func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 	err = c.BodyParser(storyDto)
 
 	storyDto.UpdatedAt = time.Now()
+	storyDto.UpdatedDate = storyDto.UpdatedAt.Format("January 2, 2006")
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

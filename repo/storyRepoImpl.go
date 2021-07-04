@@ -38,7 +38,7 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag)  error {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag, updated bool)  error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -49,6 +49,7 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 		{"title", newTitle},
 		{"updatedAt", time.Now()},
 		{"tags", tags},
+		{"updated", updated},
 	},
 	}}
 

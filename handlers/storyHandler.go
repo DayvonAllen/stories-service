@@ -110,6 +110,7 @@ func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 	err = c.BodyParser(storyDto)
 
 	storyDto.UpdatedAt = time.Now()
+	storyDto.Updated = true
 	storyDto.UpdatedDate = storyDto.UpdatedAt.Format("January 2, 2006")
 
 	if err != nil {
@@ -136,7 +137,7 @@ func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 		}
 	}
 
-	err = s.StoryService.UpdateById(id, storyDto.Content, storyDto.Title, u.Username, &storyDto.Tags)
+	err = s.StoryService.UpdateById(id, storyDto.Content, storyDto.Title, u.Username, &storyDto.Tags, storyDto.Updated)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

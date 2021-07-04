@@ -3,6 +3,8 @@
   - `GET:http://localhost:8081/stories/featured`
 - Get All stories:
     - `GET:http://localhost:8081/stories?page=1`(Gives 10 stories at a time)`
+- Get All stories(returns new stories first):
+  - `GET:http://localhost:8081/stories?page=1&new=true`(Gives 10 stories at a time)`
 - Get story by ID:
   - `GET:http://localhost:8081/stories/<story ID>`
 - Create Story:

@@ -62,7 +62,7 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	return nil
 }
 
-func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
+func (s StoryRepoImpl) FindAll(page string, newStoriesQuery bool) (*[]domain.Story, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -75,6 +75,10 @@ func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
 	}
 	findOptions.SetSkip((int64(pageNumber) - 1) * int64(perPage))
 	findOptions.SetLimit(int64(perPage))
+
+	if newStoriesQuery {
+		findOptions.SetSort(bson.D{{"createdAt", -1}})
+	}
 
 	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{}, &findOptions)
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strconv"
 	"time"
 )
 
@@ -63,8 +64,15 @@ func (s *StoryHandler) CreateStory(c *fiber.Ctx) error {
 
 func (s *StoryHandler) FindAll(c *fiber.Ctx) error {
 	page := c.Query("page", "1")
+	newStoriesQuery := c.Query("new", "false")
 
-	stories, err := s.StoryService.FindAll(page)
+	isNew, err := strconv.ParseBool(newStoriesQuery)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("must provide a valid value")})
+	}
+
+	stories, err := s.StoryService.FindAll(page, isNew)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

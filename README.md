@@ -1,6 +1,10 @@
-## Routes(All routes are protected)
+## Routes(All routes are protected except for featured)
+- Get Featured stories(only returns 10 stories):
+  - `GET:http://localhost:8081/stories/featured`
 - Get All stories:
     - `GET:http://localhost:8081/stories?page=1`(Gives 10 stories at a time)`
+- Get story by ID:
+  - `GET:http://localhost:8081/stories/<story ID>`
 - Create Story:
     - `POST:http://localhost:8081/stories`
     - JSON(must include at least one tag):

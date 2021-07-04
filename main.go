@@ -12,10 +12,6 @@ import (
 
 func init() {
 	// create database connection instance for first time
-	//err := repo.TagRepoImpl{}.CreateMany(util.GenerateTags())
-	//if err != nil {
-	//	return
-	//}
 	go events.KafkaConsumerGroup()
 }
 

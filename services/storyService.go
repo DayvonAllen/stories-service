@@ -10,6 +10,7 @@ type StoryService interface {
 	Create(dto *domain.CreateStoryDto) error
 	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag)  error
 	FindAll(string) (*[]domain.Story, error)
+	FeaturedStories() (*[]domain.FeaturedStoryDto, error)
 	LikeStoryById(primitive.ObjectID, string) error
 	DisLikeStoryById(primitive.ObjectID, string) error
 	FindById(primitive.ObjectID, string) (*domain.StoryDto, error)
@@ -38,6 +39,14 @@ func (s DefaultStoryService) UpdateById(id primitive.ObjectID, newContent string
 
 func (s DefaultStoryService) FindAll(page string) (*[]domain.Story, error) {
 	story, err := s.repo.FindAll(page)
+	if err != nil {
+		return nil, err
+	}
+	return story, nil
+}
+
+func (s DefaultStoryService) FeaturedStories() (*[]domain.FeaturedStoryDto, error) {
+	story, err := s.repo.FeaturedStories()
 	if err != nil {
 		return nil, err
 	}

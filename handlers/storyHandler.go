@@ -73,6 +73,17 @@ func (s *StoryHandler) FindAll(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": stories})
 }
 
+func (s *StoryHandler) FeaturedStories(c *fiber.Ctx) error {
+	stories, err := s.StoryService.FeaturedStories()
+
+	if err != nil {
+		fmt.Println("err")
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": stories})
+}
+
 func (s *StoryHandler) UpdateStory(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 	c.Accepts("application/json")

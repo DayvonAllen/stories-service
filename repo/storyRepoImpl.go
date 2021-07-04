@@ -20,6 +20,7 @@ import (
 type StoryRepoImpl struct {
 	Story        domain.Story
 	StoryDto     domain.StoryDto
+	FeaturedStoryList    []domain.FeaturedStoryDto
 	StoryList    []domain.Story
 	StoryDtoList []domain.StoryDto
 }
@@ -93,6 +94,35 @@ func (s StoryRepoImpl) FindAll(page string) (*[]domain.Story, error) {
 	}
 
 	return &s.StoryList, nil
+}
+
+func (s StoryRepoImpl) FeaturedStories() (*[]domain.FeaturedStoryDto, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	findOptions := options.FindOptions{}
+
+	findOptions.SetLimit(10)
+	findOptions.SetSort(bson.D{{"score", -1}})
+
+	cur, err := conn.StoriesCollection.Find(context.TODO(), bson.M{}, &findOptions)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cur.All(context.TODO(), &s.FeaturedStoryList); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the cursor once finished
+	err = cur.Close(context.TODO())
+
+	if err != nil {
+		return nil, fmt.Errorf("error processing data")
+	}
+
+	return &s.FeaturedStoryList, nil
 }
 
 func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string) error {

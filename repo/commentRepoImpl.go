@@ -67,8 +67,6 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 		log.Fatal(err)
 	}
 
-	fmt.Println(c.CommentDtoList)
-
 	// Close the cursor once finished
 	err = cur.Close(context.TODO())
 

@@ -26,6 +26,7 @@ type Comment struct {
 }
 
 type CommentDto struct {
+	Id        		primitive.ObjectID `bson:"_id" json:"id"`
 	Content string  		`bson:"content" json:"content"`
 	AuthorUsername string  `bson:"authorUsername" json:"authorUsername"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`

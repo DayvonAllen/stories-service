@@ -39,8 +39,8 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	comment.StoryId = id
 	comment.CreatedAt = time.Now()
 	comment.UpdatedAt = time.Now()
-	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006")
-	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006")
+	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
+	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
 	err = ch.CommentService.Create(comment)
 
@@ -82,7 +82,7 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 
 	comment.UpdatedAt = time.Now()
 	comment.Edited = true
-	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006")
+	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
 	_, err = ch.CommentService.UpdateById(comment.Id, comment.Content, comment.Edited, comment.UpdatedAt)
 

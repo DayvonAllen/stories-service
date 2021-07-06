@@ -9,10 +9,9 @@ import (
 
 type CommentService interface {
 	Create(comment *domain.Comment) error
-	FindById(id primitive.ObjectID) (*domain.Comment, error)
 	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time) (*domain.Comment, error)
-	DeleteById(id primitive.ObjectID) error
+	DeleteById(id primitive.ObjectID, username string) error
 }
 
 type DefaultCommentService struct {
@@ -25,14 +24,6 @@ func (c DefaultCommentService) Create(comment *domain.Comment) error {
 		return err
 	}
 	return nil
-}
-
-func (c DefaultCommentService) FindById(id primitive.ObjectID) (*domain.Comment, error) {
-	comment, err := c.repo.FindById(id)
-	if err != nil {
-		return nil, err
-	}
-	return comment, nil
 }
 
 func (c DefaultCommentService) FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error) {
@@ -51,8 +42,8 @@ func (c DefaultCommentService) UpdateById(id primitive.ObjectID, newContent stri
 	return comment, nil
 }
 
-func (c DefaultCommentService) DeleteById(id primitive.ObjectID) error {
-	err := c.repo.DeleteById(id)
+func (c DefaultCommentService) DeleteById(id primitive.ObjectID, username string) error {
+	err := c.repo.DeleteById(id, username)
 	if err != nil {
 		return err
 	}

@@ -32,23 +32,6 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	return  nil
 }
 
-func (c CommentRepoImpl) FindById(storyID primitive.ObjectID) (*domain.Comment, error) {
-	conn := database.MongoConnectionPool.Get().(*database.Connection)
-	defer database.MongoConnectionPool.Put(conn)
-
-	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&c.Comment)
-
-	if err != nil {
-		// ErrNoDocuments means that the filter did not match any documents in the collection
-		if err == mongo.ErrNoDocuments {
-			return nil, err
-		}
-		return  nil, fmt.Errorf("error processing data")
-	}
-
-	return &c.Comment, nil
-}
-
 func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*[]domain.CommentDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
@@ -96,14 +79,20 @@ func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, ed
 	return &c.Comment, nil
 }
 
-func (c CommentRepoImpl) DeleteById(id primitive.ObjectID) error {
+func (c CommentRepoImpl) DeleteById(id primitive.ObjectID, username string) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := conn.CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}})
+	res, err := conn.CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+
 	if err != nil {
 		return err
 	}
+
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("you can't delete a comment that you didn't create")
+	}
+
 	return nil
 }
 

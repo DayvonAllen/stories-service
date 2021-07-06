@@ -18,7 +18,6 @@ type Comment struct {
 	DislikeCount int             `bson:"dislikeCount" json:"-"`
 	FlagCount int				`bson:"flagCount" json:"-"`
 	Flags []Flag				`bson:"flags" json:"-"`
-	Replies []Comment 			`bson:"replies" json:"-"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
 	CreatedDate string 				`bson:"createdDate" json:"-"`
@@ -32,9 +31,10 @@ type CommentDto struct {
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
 	Edited   bool         		`bson:"edited" json:"-"`
-	Replies []CommentDto 		`bson:"replies" json:"replies"`
 	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
 	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
+	CreatedAt time.Time          `json:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt"`
 	CreatedDate string 				`json:"createdDate"`
 	UpdatedDate string 				`json:"updatedDate"`
 }

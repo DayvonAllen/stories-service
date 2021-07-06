@@ -51,25 +51,6 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) FindById(c *fiber.Ctx) error {
-	c.Accepts("application/json")
-	comment := new(domain.Comment)
-
-	err := c.BodyParser(comment)
-
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
-	}
-
-	commentData, err := ch.CommentService.FindById(comment.Id)
-
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
-	}
-
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": commentData})
-}
-
 func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	comment := new(domain.Comment)
@@ -80,11 +61,17 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
 	comment.UpdatedAt = time.Now()
 	comment.Edited = true
 	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
-	_, err = ch.CommentService.UpdateById(comment.Id, comment.Content, comment.Edited, comment.UpdatedAt)
+	_, err = ch.CommentService.UpdateById(id, comment.Content, comment.Edited, comment.UpdatedAt)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -103,7 +90,13 @@ func (ch *CommentHandler) DeleteById(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
 	}
 
-	err = ch.CommentService.DeleteById(u.Id)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	err = ch.CommentService.DeleteById(id, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -111,6 +104,3 @@ func (ch *CommentHandler) DeleteById(c *fiber.Ctx) error {
 
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
-
-
-

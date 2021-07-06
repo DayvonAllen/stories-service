@@ -15,7 +15,6 @@ type Story struct {
 	Dislikes []string  `bson:"dislikes" json:"-"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
-	FlagCount []primitive.ObjectID	`bson:"flagCount" json:"-"`
 	Score int                    `bson:"score" json:"-"`
 	Tags []Tag	 			 `bson:"tags" json:"tags"`
 	Updated bool				 `bson:"updated" json:"updated"`

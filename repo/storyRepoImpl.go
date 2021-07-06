@@ -332,19 +332,6 @@ func (s StoryRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
 		flag.Id = primitive.NewObjectID()
 		_, err = conn.FlagCollection.InsertOne(context.TODO(), &flag)
 
-		if err != nil {
-			return err
-		}
-
-		filter := bson.D{{"_id", flag.FlaggedResource}}
-		update := bson.M{"$push": bson.M{"flagCount": flag.Id}}
-
-		_, err = conn.StoryCollection.UpdateOne(context.TODO(),
-			filter, update)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	}
 

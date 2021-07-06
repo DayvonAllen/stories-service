@@ -270,23 +270,10 @@ func (c CommentRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
 		flag.Id = primitive.NewObjectID()
 		_, err = conn.FlagCollection.InsertOne(context.TODO(), &flag)
 
-		if err != nil {
-			return err
-		}
-
-		filter := bson.D{{"_id", flag.FlaggedResource}}
-		update := bson.M{"$push": bson.M{"flags": flag.Id}}
-
-		_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
-			filter, update)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	}
 
-	return fmt.Errorf("you've already flagged this user")
+	return fmt.Errorf("you've already flagged this comment")
 }
 
 func (c CommentRepoImpl) DeleteById(id primitive.ObjectID, username string) error {

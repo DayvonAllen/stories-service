@@ -33,7 +33,6 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 
 	comment.Likes = make([]string,0,0)
 	comment.Dislikes = make([]string,0,0)
-	comment.Flags = make([]primitive.ObjectID, 0, 0)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

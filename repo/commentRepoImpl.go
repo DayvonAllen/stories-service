@@ -23,7 +23,14 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := conn.CommentsCollection.InsertOne(context.TODO(), &comment)
+	story := new(domain.Story)
+	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"storyId", comment.StoryId}}).Decode(&story)
+
+	if err != nil {
+		return  fmt.Errorf("story not found")
+	}
+
+	_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
 
 	if err != nil {
 		return err

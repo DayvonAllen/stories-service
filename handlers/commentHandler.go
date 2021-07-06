@@ -39,6 +39,8 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	comment.StoryId = id
 	comment.CreatedAt = time.Now()
 	comment.UpdatedAt = time.Now()
+	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006")
+	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006")
 
 	err = ch.CommentService.Create(comment)
 
@@ -68,22 +70,6 @@ func (ch *CommentHandler) FindById(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": commentData})
 }
 
-//func (ch *CommentHandler) FindAllCommentsByStoryId(c *fiber.Ctx) error {
-//	id, err := primitive.ObjectIDFromHex(c.Params("id"))
-//
-//	if err != nil {
-//		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
-//	}
-//
-//	comments, err := ch.CommentService.FindAllCommentsByStoryId(id)
-//
-//	if err != nil {
-//		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
-//	}
-//
-//	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": comments})
-//}
-
 func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	comment := new(domain.Comment)
@@ -94,13 +80,17 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	commentData, err := ch.CommentService.UpdateById(comment.Id, comment.Content)
+	comment.UpdatedAt = time.Now()
+	comment.Edited = true
+	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006")
+
+	_, err = ch.CommentService.UpdateById(comment.Id, comment.Content, comment.Edited, comment.UpdatedAt)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": commentData})
+	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
 func (ch *CommentHandler) DeleteById(c *fiber.Ctx) error {

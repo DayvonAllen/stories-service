@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"time"
 )
 
 type CommentRepoImpl struct {
@@ -78,13 +79,14 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 	return &c.CommentDtoList, nil
 }
 
-func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error) {
+func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time) (*domain.Comment, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"_id", id}}
-	update := bson.D{{"$set", bson.D{{"content", newContent}}}}
+	update := bson.D{{"$set", bson.D{{"content", newContent}, {"edited", edited},
+		{"updatedTime", updatedTime}}}}
 
 	err := conn.CommentsCollection.FindOneAndUpdate(context.TODO(),
 		filter, update, opts).Decode(&c.Comment)

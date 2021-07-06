@@ -11,6 +11,7 @@ type Comment struct {
 	StoryId        	primitive.ObjectID `bson:"storyId" json:"-"`
 	Content string  `bson:"content" json:"content"`
 	AuthorUsername string  `bson:"authorUsername" json:"-"`
+	Edited   bool         `bson:"edited" json:"-"`
 	Likes  []string   			`bson:"likes" json:"-"`
 	Dislikes []string  			 `bson:"dislikes" json:"-"`
 	LikeCount int                `bson:"likeCount" json:"-"`
@@ -20,6 +21,8 @@ type Comment struct {
 	Replies []Comment 			`bson:"replies" json:"-"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
+	CreatedDate string 				`bson:"createdDate" json:"-"`
+	UpdatedDate string 				`bson:"updatedDate" json:"-"`
 }
 
 type CommentDto struct {
@@ -27,8 +30,10 @@ type CommentDto struct {
 	AuthorUsername string  `bson:"authorUsername" json:"authorUsername"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
+	Edited   bool         		`bson:"edited" json:"-"`
 	Replies []CommentDto 		`bson:"replies" json:"replies"`
 	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
 	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
 	CreatedDate string 				`json:"createdDate"`
+	UpdatedDate string 				`json:"updatedDate"`
 }

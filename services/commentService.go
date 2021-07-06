@@ -11,6 +11,8 @@ type CommentService interface {
 	Create(comment *domain.Comment) error
 	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error)
+	LikeCommentById(primitive.ObjectID, string) error
+	DisLikeCommentById(primitive.ObjectID, string) error
 	DeleteById(id primitive.ObjectID, username string) error
 }
 
@@ -40,6 +42,22 @@ func (c DefaultCommentService) UpdateById(id primitive.ObjectID, newContent stri
 		return nil, err
 	}
 	return comment, nil
+}
+
+func (c DefaultCommentService) LikeCommentById(id primitive.ObjectID, username string) error {
+	err := c.repo.LikeCommentById(id, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c DefaultCommentService) DisLikeCommentById(id primitive.ObjectID, username string) error {
+	err := c.repo.DisLikeCommentById(id, username)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c DefaultCommentService) DeleteById(id primitive.ObjectID, username string) error {

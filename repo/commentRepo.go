@@ -10,5 +10,7 @@ type CommentRepo interface {
 	Create(comment *domain.Comment) error
 	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error)
+	LikeCommentById(primitive.ObjectID, string) error
+	DisLikeCommentById(primitive.ObjectID, string) error
 	DeleteById(id primitive.ObjectID, username string) error
 }

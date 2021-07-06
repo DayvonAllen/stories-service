@@ -7,17 +7,18 @@ import (
 
 // Comment todo validate struct
 type Comment struct {
-	Id        		primitive.ObjectID `bson:"_id" json:"-"`
-	StoryId        	primitive.ObjectID `bson:"storyId" json:"-"`
-	Content string  `bson:"content" json:"content"`
-	AuthorUsername string  `bson:"authorUsername" json:"-"`
-	Edited   bool         `bson:"edited" json:"-"`
-	Likes  []string   			`bson:"likes" json:"-"`
-	Dislikes []string  			 `bson:"dislikes" json:"-"`
-	LikeCount int                `bson:"likeCount" json:"-"`
-	DislikeCount int             `bson:"dislikeCount" json:"-"`
-	CreatedAt time.Time          `bson:"createdAt" json:"-"`
-	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
+	Id             primitive.ObjectID `bson:"_id" json:"-"`
+	ResourceId     primitive.ObjectID `bson:"resourceId" json:"-"`
+	Content        string             `bson:"content" json:"content"`
+	AuthorUsername string             `bson:"authorUsername" json:"-"`
+	Edited         bool               `bson:"edited" json:"-"`
+	Replies        []CommentDto       `bson:"replies" json:"replies"`
+	Likes          []string           `bson:"likes" json:"-"`
+	Dislikes       []string           `bson:"dislikes" json:"-"`
+	LikeCount      int                `bson:"likeCount" json:"-"`
+	DislikeCount   int                `bson:"dislikeCount" json:"-"`
+	CreatedAt      time.Time          `bson:"createdAt" json:"-"`
+	UpdatedAt      time.Time          `bson:"updatedAt" json:"-"`
 	CreatedDate string 				`bson:"createdDate" json:"-"`
 	UpdatedDate string 				`bson:"updatedDate" json:"-"`
 }
@@ -29,6 +30,7 @@ type CommentDto struct {
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
 	Edited   bool         		`bson:"edited" json:"edited"`
+	Replies        *[]CommentDto       `bson:"replies" json:"replies"`
 	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
 	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
 	CreatedAt time.Time          `json:"createdAt"`

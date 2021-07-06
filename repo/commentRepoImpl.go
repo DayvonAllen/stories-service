@@ -16,21 +16,48 @@ import (
 )
 
 type CommentRepoImpl struct {
-	Comment domain.Comment
-	CommentDto domain.CommentDto
-	CommentList []domain.Comment
+	Comment        domain.Comment
+	CommentDto     domain.CommentDto
+	CommentList    []domain.Comment
 	CommentDtoList []domain.CommentDto
 }
 
-func (c CommentRepoImpl) Create(comment *domain.Comment) error {
-	conn := database.MongoConnectionPool.Get().(*database.Connection)
-	defer database.MongoConnectionPool.Put(conn)
+func (c CommentRepoImpl) Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error {
+	if dbType == "comment" {
+		obj := new(domain.Comment)
+		err := mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.ResourceId}}).Decode(&obj)
 
-	story := new(domain.Story)
-	err := conn.StoryCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(&story)
+		if err != nil {
+			return fmt.Errorf("resource not found")
+		}
+
+		_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
+
+		if err != nil {
+			return fmt.Errorf("error!!!")
+		}
+
+		err = mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.Id}}).Decode(&c.CommentDto)
+
+		obj.Replies = append(obj.Replies, c.CommentDto)
+
+		fmt.Println(obj.Id)
+		fmt.Println(obj.Replies)
+
+		filter := bson.D{{"_id", obj.Id}}
+		update := bson.D{{"$set", bson.D{{"replies", obj.Replies}}}}
+
+		_, err = conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
+
+		return nil
+	}
+
+	obj := new(domain.Story)
+
+	err := mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.ResourceId}}).Decode(&obj)
 
 	if err != nil {
-		return  fmt.Errorf("story not found")
+		return fmt.Errorf("resource not found")
 	}
 
 	_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
@@ -39,21 +66,21 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 		return err
 	}
 
-	return  nil
+	return nil
 }
 
-func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*[]domain.CommentDto, error) {
+func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.ObjectID) (*[]domain.CommentDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	cur, err := conn.CommentsCollection.Find(context.TODO(), bson.D{{"storyId", storyID}})
+	cur, err := conn.CommentsCollection.Find(context.TODO(), bson.D{{"resourceId", resourceID}})
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		if err == mongo.ErrNoDocuments {
 			return nil, err
 		}
-		return  nil, fmt.Errorf("error processing data")
+		return nil, fmt.Errorf("error processing data")
 	}
 
 	if err = cur.All(context.TODO(), &c.CommentDtoList); err != nil {
@@ -146,12 +173,11 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 
 		c.Comment.DislikeCount = len(c.Comment.Dislikes)
 
-		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1},  "$set": bson.D{{"dislikeCount", c.Comment.DislikeCount}}}
+		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1}, "$set": bson.D{{"dislikeCount", c.Comment.DislikeCount}}}
 
 		filter = bson.D{{"_id", commentId}}
 
 		fmt.Println("ran")
-
 
 		_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
 			filter, update)
@@ -228,7 +254,7 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 
 		c.Comment.LikeCount = len(c.Comment.Likes)
 
-		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1},  "$set": bson.D{{"likeCount", c.Comment.LikeCount}}}
+		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1}, "$set": bson.D{{"likeCount", c.Comment.LikeCount}}}
 
 		filter = bson.D{{"_id", commentId}}
 

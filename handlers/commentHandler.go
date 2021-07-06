@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"example.com/app/database"
 	"example.com/app/domain"
 	"example.com/app/services"
 	"fmt"
@@ -31,22 +32,69 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 
-	comment.Likes = make([]string,0,0)
-	comment.Dislikes = make([]string,0,0)
-
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	comment.Likes = make([]string,0,0)
+	comment.Dislikes = make([]string,0,0)
+	comment.Replies = make([]domain.CommentDto, 0, 0)
 	comment.Id = primitive.NewObjectID()
 	comment.AuthorUsername = u.Username
-	comment.StoryId = id
+	comment.ResourceId = id
 	comment.CreatedAt = time.Now()
 	comment.UpdatedAt = time.Now()
 	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
 	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
-	err = ch.CommentService.Create(comment)
+	err = ch.CommentService.Create(comment, conn.StoryCollection, conn, "story")
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
+}
+
+func (ch *CommentHandler) CreateCommentOnComment(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+	token := c.Get("Authorization")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	comment := new(domain.Comment)
+
+	err = c.BodyParser(comment)
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	comment.Likes = make([]string,0,0)
+	comment.Dislikes = make([]string,0,0)
+	comment.Replies = make([]domain.CommentDto, 0, 0)
+	comment.Id = primitive.NewObjectID()
+	comment.AuthorUsername = u.Username
+	comment.ResourceId = id
+	comment.CreatedAt = time.Now()
+	comment.UpdatedAt = time.Now()
+	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
+	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
+
+	err = ch.CommentService.Create(comment, conn.CommentsCollection, conn, "comment")
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

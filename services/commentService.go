@@ -1,15 +1,17 @@
 package services
 
 import (
+	"example.com/app/database"
 	"example.com/app/domain"
 	"example.com/app/repo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
 type CommentService interface {
-	Create(comment *domain.Comment) error
-	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
+	Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error
+	FindAllCommentsByResourceId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error)
 	LikeCommentById(primitive.ObjectID, string) error
 	DisLikeCommentById(primitive.ObjectID, string) error
@@ -21,16 +23,16 @@ type DefaultCommentService struct {
 	repo repo.CommentRepo
 }
 
-func (c DefaultCommentService) Create(comment *domain.Comment) error {
-	err := c.repo.Create(comment)
+func (c DefaultCommentService) Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error {
+	err := c.repo.Create(comment, mongoCollection,conn, dbType)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c DefaultCommentService) FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error) {
-	comment, err := c.repo.FindAllCommentsByStoryId(id)
+func (c DefaultCommentService) FindAllCommentsByResourceId(id primitive.ObjectID) (*[]domain.CommentDto, error) {
+	comment, err := c.repo.FindAllCommentsByResourceId(id)
 	if err != nil {
 		return nil, err
 	}

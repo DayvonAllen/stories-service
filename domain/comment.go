@@ -30,7 +30,7 @@ type CommentDto struct {
 	AuthorUsername string  `bson:"authorUsername" json:"authorUsername"`
 	LikeCount int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
-	Edited   bool         		`bson:"edited" json:"-"`
+	Edited   bool         		`bson:"edited" json:"edited"`
 	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
 	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
 	CreatedAt time.Time          `json:"createdAt"`

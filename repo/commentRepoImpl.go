@@ -60,12 +60,12 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 	return &c.CommentDtoList, nil
 }
 
-func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time) (*domain.Comment, error) {
+func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{"_id", id}, {"authorUsername", username}}
 	update := bson.D{{"$set", bson.D{{"content", newContent}, {"edited", edited},
 		{"updatedTime", updatedTime}}}}
 
@@ -73,7 +73,7 @@ func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, ed
 		filter, update, opts).Decode(&c.Comment)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot update comment that you didn't write")
 	}
 
 	return &c.Comment, nil

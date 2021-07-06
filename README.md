@@ -70,6 +70,14 @@
     "content": "Nice story"
 }
 ```  
+- Update comment:
+  -`PUT:http://localhost:8081/stories/<Comment ID>`
+  - JSON:
+```
+{
+    "content": "Nice story"
+}
+```  
 - Delete Comment:
   -`DELETE:http://localhost:8081/comment/<Comment ID>`
 ---

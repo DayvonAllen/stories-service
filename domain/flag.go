@@ -6,6 +6,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type Flag struct {
 	Id        primitive.ObjectID `bson:"_id" json:"-"`
 	FlaggerID  primitive.ObjectID `bson:"flaggerID" json:"-"`
-	FlaggedId primitive.ObjectID `bson:"flaggedId" json:"flaggedId"`
+	FlaggedResource primitive.ObjectID `bson:"flaggedResource" json:"-"`
 	Reason  string             `bson:"reason" json:"reason"`
 }
+

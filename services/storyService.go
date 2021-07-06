@@ -14,6 +14,7 @@ type StoryService interface {
 	LikeStoryById(primitive.ObjectID, string) error
 	DisLikeStoryById(primitive.ObjectID, string) error
 	FindById(primitive.ObjectID, string) (*domain.StoryDto, error)
+	UpdateFlagCount(flag *domain.Flag) error
 	DeleteById(primitive.ObjectID, string) error
 }
 
@@ -71,6 +72,14 @@ func (s DefaultStoryService) LikeStoryById(id primitive.ObjectID, username strin
 
 func (s DefaultStoryService) DisLikeStoryById(id primitive.ObjectID, username string) error {
 	err := s.repo.DisLikeStoryById(id, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s DefaultStoryService) UpdateFlagCount(flag *domain.Flag) error {
+	err := s.repo.UpdateFlagCount(flag)
 	if err != nil {
 		return err
 	}

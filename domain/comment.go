@@ -16,8 +16,6 @@ type Comment struct {
 	Dislikes []string  			 `bson:"dislikes" json:"-"`
 	LikeCount int                `bson:"likeCount" json:"-"`
 	DislikeCount int             `bson:"dislikeCount" json:"-"`
-	FlagCount int				`bson:"flagCount" json:"-"`
-	Flags []Flag				`bson:"flags" json:"-"`
 	CreatedAt time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"-"`
 	CreatedDate string 				`bson:"createdDate" json:"-"`

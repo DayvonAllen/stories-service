@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
@@ -32,6 +33,7 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 
 	comment.Likes = make([]string,0,0)
 	comment.Dislikes = make([]string,0,0)
+	comment.Flags = make([]primitive.ObjectID, 0, 0)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -44,7 +46,6 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	comment.UpdatedAt = time.Now()
 	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
 	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
-	fmt.Println(comment)
 
 	err = ch.CommentService.Create(comment)
 
@@ -141,6 +142,45 @@ func (ch *CommentHandler) DisLikeComment(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
+	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
+}
+
+func (ch *CommentHandler) UpdateFlagCount(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+	token := c.Get("Authorization")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	flag := new(domain.Flag)
+
+	err = c.BodyParser(flag)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	flag.FlaggedResource = id
+	flag.FlaggerID = u.Id
+
+	err = ch.CommentService.UpdateFlagCount(flag)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+		}
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 

@@ -13,5 +13,6 @@ type StoryRepo interface {
 	 LikeStoryById(primitive.ObjectID, string) error
 	 DisLikeStoryById(primitive.ObjectID, string) error
 	 FindById(primitive.ObjectID, string) (*domain.StoryDto, error)
+	 UpdateFlagCount(flag *domain.Flag) error
 	 DeleteById(primitive.ObjectID, string) error
 }

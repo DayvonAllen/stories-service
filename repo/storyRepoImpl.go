@@ -313,6 +313,44 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 	return &s.StoryDto, nil
 }
 
+func (s StoryRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	cur, err := conn.FlagCollection.Find(context.TODO(), bson.M{
+		"$and": []interface{}{
+			bson.M{"flaggerID": flag.FlaggerID},
+			bson.M{"flaggedResource": flag.FlaggedResource},
+		},
+	})
+
+	if err != nil {
+		return fmt.Errorf("error processing data")
+	}
+
+	if !cur.Next(context.TODO()) {
+		flag.Id = primitive.NewObjectID()
+		_, err = conn.FlagCollection.InsertOne(context.TODO(), &flag)
+
+		if err != nil {
+			return err
+		}
+
+		filter := bson.D{{"_id", flag.FlaggedResource}}
+		update := bson.M{"$push": bson.M{"flagCount": flag.Id}}
+
+		_, err = conn.StoryCollection.UpdateOne(context.TODO(),
+			filter, update)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("you've already flagged this story")
+}
+
 func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)

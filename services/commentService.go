@@ -13,6 +13,7 @@ type CommentService interface {
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error)
 	LikeCommentById(primitive.ObjectID, string) error
 	DisLikeCommentById(primitive.ObjectID, string) error
+	UpdateFlagCount(flag *domain.Flag) error
 	DeleteById(id primitive.ObjectID, username string) error
 }
 
@@ -59,6 +60,15 @@ func (c DefaultCommentService) DisLikeCommentById(id primitive.ObjectID, usernam
 	}
 	return nil
 }
+
+func (c DefaultCommentService) UpdateFlagCount(flag *domain.Flag) error {
+	err := c.repo.UpdateFlagCount(flag)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 
 func (c DefaultCommentService) DeleteById(id primitive.ObjectID, username string) error {
 	err := c.repo.DeleteById(id, username)

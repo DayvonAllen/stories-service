@@ -29,7 +29,7 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := conn.CommentCollection.InsertOne(context.TODO(), &story)
+	_, err := conn.StoryCollection.InsertOne(context.TODO(), &story)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
@@ -53,7 +53,7 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	},
 	}}
 
-	_, err := conn.CommentCollection.UpdateOne(context.TODO(),
+	_, err := conn.StoryCollection.UpdateOne(context.TODO(),
 		filter, update)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (s StoryRepoImpl) FindAll(page string, newStoriesQuery bool) (*[]domain.Sto
 		findOptions.SetSort(bson.D{{"createdAt", -1}})
 	}
 
-	cur, err := conn.CommentCollection.Find(context.TODO(), bson.M{}, &findOptions)
+	cur, err := conn.StoryCollection.Find(context.TODO(), bson.M{}, &findOptions)
 
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (s StoryRepoImpl) FeaturedStories() (*[]domain.FeaturedStoryDto, error) {
 	findOptions.SetLimit(10)
 	findOptions.SetSort(bson.D{{"score", -1}})
 
-	cur, err := conn.CommentCollection.Find(context.TODO(), bson.M{}, &findOptions)
+	cur, err := conn.StoryCollection.Find(context.TODO(), bson.M{}, &findOptions)
 
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 
 	ctx := context.TODO()
 
-	cur, err := conn.CommentCollection.Find(ctx, bson.D{
+	cur, err := conn.StoryCollection.Find(ctx, bson.D{
 		{"_id", storyId}, {"likes", username},
 	})
 
@@ -168,7 +168,7 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 		filter := bson.D{{"_id", storyId}}
 		update := bson.M{"$pull": bson.M{"dislikes": username}}
 
-		res, err := conn.CommentCollection.UpdateOne(context.TODO(), filter, update)
+		res, err := conn.StoryCollection.UpdateOne(context.TODO(), filter, update)
 
 		if err != nil {
 			return nil, err
@@ -178,7 +178,7 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 			return nil, fmt.Errorf("cannot find story")
 		}
 
-		err = conn.CommentCollection.FindOne(context.TODO(),
+		err = conn.StoryCollection.FindOne(context.TODO(),
 			filter).Decode(&s.Story)
 
 		s.Story.DislikeCount = len(s.Story.Dislikes)
@@ -188,7 +188,7 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 
 		filter = bson.D{{"_id", storyId}}
 
-		_, err = conn.CommentCollection.UpdateOne(context.TODO(),
+		_, err = conn.StoryCollection.UpdateOne(context.TODO(),
 			filter, update)
 
 		if err != nil {
@@ -213,7 +213,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 
 	ctx := context.TODO()
 
-	cur, err := conn.CommentCollection.Find(ctx, bson.D{
+	cur, err := conn.StoryCollection.Find(ctx, bson.D{
 		{"_id", storyId}, {"dislikes", username},
 	})
 
@@ -245,7 +245,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 		filter := bson.D{{"_id", storyId}}
 		update := bson.M{"$pull": bson.M{"likes": username}}
 
-		res, err := conn.CommentCollection.UpdateOne(context.TODO(), filter, update)
+		res, err := conn.StoryCollection.UpdateOne(context.TODO(), filter, update)
 
 		if err != nil {
 			return nil, err
@@ -255,7 +255,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 			return nil, fmt.Errorf("cannot find story")
 		}
 
-		err = conn.CommentCollection.FindOne(context.TODO(),
+		err = conn.StoryCollection.FindOne(context.TODO(),
 			filter).Decode(&s.Story)
 
 		s.Story.LikeCount = len(s.Story.Likes)
@@ -265,7 +265,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 
 		filter = bson.D{{"_id", storyId}}
 
-		_, err = conn.CommentCollection.UpdateOne(context.TODO(),
+		_, err = conn.StoryCollection.UpdateOne(context.TODO(),
 			filter, update)
 
 		if err != nil {
@@ -288,7 +288,7 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	err := conn.CommentCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&s.StoryDto)
+	err := conn.StoryCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&s.StoryDto)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -317,7 +317,7 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	res, err := conn.CommentCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+	res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
 	if err != nil {
 		return err

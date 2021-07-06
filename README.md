@@ -62,6 +62,10 @@
     - `PUT:http://localhost:8081/stories/like/<Story ID>`
 - Dislike Story:
     - `PUT:http://localhost:8081/stories/dislike/<Story ID>`
+- Like Comment:
+    - `http://localhost:8081/comment/like/<Comment ID>`
+- Dislike Comment:
+    - `http://localhost:8081/comment/dislike/<Comment ID>`
 - Comment On A Story:
   -`POST:http://localhost:8081/comment/<Story ID>`
   - JSON:

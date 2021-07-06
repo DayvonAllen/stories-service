@@ -27,7 +27,7 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	defer database.MongoConnectionPool.Put(conn)
 
 	story := new(domain.Story)
-	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"storyId", comment.StoryId}}).Decode(&story)
+	err := conn.StoryCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(&story)
 
 	if err != nil {
 		return  fmt.Errorf("story not found")
@@ -129,7 +129,7 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 
 		fmt.Println("ran")
 
-		res, err := conn.CommentCollection.UpdateOne(context.TODO(), filter, update)
+		res, err := conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
 
 		fmt.Println("ran")
 
@@ -141,7 +141,7 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 			return nil, fmt.Errorf("cannot find story")
 		}
 
-		err = conn.CommentCollection.FindOne(context.TODO(),
+		err = conn.CommentsCollection.FindOne(context.TODO(),
 			filter).Decode(&c.Comment)
 
 		c.Comment.DislikeCount = len(c.Comment.Dislikes)
@@ -153,7 +153,7 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 		fmt.Println("ran")
 
 
-		_, err = conn.CommentCollection.UpdateOne(context.TODO(),
+		_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
 			filter, update)
 
 		fmt.Println("ran")
@@ -180,11 +180,9 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 
 	ctx := context.TODO()
 
-	cur, err := conn.CommentCollection.Find(ctx, bson.D{
+	cur, err := conn.CommentsCollection.Find(ctx, bson.D{
 		{"_id", commentId}, {"dislikes", username},
 	})
-
-	fmt.Println(commentId)
 
 	if err != nil {
 		return err
@@ -214,24 +212,18 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 		fmt.Println(commentId)
 		filter := bson.D{{"_id", commentId}}
 		update := bson.M{"$pull": bson.M{"likes": username}}
-		fmt.Println("ran")
 
-		res, err := conn.CommentCollection.UpdateOne(context.TODO(), filter, update)
+		res, err := conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
 
 		if err != nil {
 			return nil, err
 		}
 
-		fmt.Println("ran")
-		fmt.Println(res)
-
-
 		if res.MatchedCount == 0 {
 			return nil, fmt.Errorf("cannot find story")
 		}
-		fmt.Println("ran")
 
-		err = conn.CommentCollection.FindOne(context.TODO(),
+		err = conn.CommentsCollection.FindOne(context.TODO(),
 			filter).Decode(&c.Comment)
 
 		c.Comment.LikeCount = len(c.Comment.Likes)
@@ -240,9 +232,8 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 
 		filter = bson.D{{"_id", commentId}}
 
-		_, err = conn.CommentCollection.UpdateOne(context.TODO(),
+		_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
 			filter, update)
-		fmt.Println("ran")
 
 		if err != nil {
 			return nil, err

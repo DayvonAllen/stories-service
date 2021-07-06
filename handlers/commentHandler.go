@@ -44,6 +44,7 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	comment.UpdatedAt = time.Now()
 	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
 	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
+	fmt.Println(comment)
 
 	err = ch.CommentService.Create(comment)
 

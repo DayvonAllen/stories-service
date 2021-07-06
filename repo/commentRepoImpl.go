@@ -9,39 +9,20 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 )
 
 type CommentRepoImpl struct {
 	Comment domain.Comment
 	CommentList []domain.Comment
+	CommentDtoList []domain.CommentDto
 }
 
 func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	story := new(domain.Story)
-	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", comment.StoryId}}).Decode(story)
-
-	if err != nil {
-		// ErrNoDocuments means that the filter did not match any documents in the collection
-		if err == mongo.ErrNoDocuments {
-			return fmt.Errorf("story not found")
-		}
-		return err
-	}
-
-	filter := bson.D{{"_id", story.Id}}
-	update := bson.M{"$push": bson.M{"comments": comment.Id}}
-
-	_, err = conn.StoriesCollection.UpdateOne(context.TODO(),
-		filter, update)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
+	_, err := conn.CommentsCollection.InsertOne(context.TODO(), &comment)
 
 	if err != nil {
 		return err
@@ -50,11 +31,11 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 	return  nil
 }
 
-func (c CommentRepoImpl) FindById(commentID primitive.ObjectID) (*domain.Comment, error) {
+func (c CommentRepoImpl) FindById(storyID primitive.ObjectID) (*domain.Comment, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", commentID}}).Decode(&c.Comment)
+	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(&c.Comment)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -67,12 +48,11 @@ func (c CommentRepoImpl) FindById(commentID primitive.ObjectID) (*domain.Comment
 	return &c.Comment, nil
 }
 
-func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*[]domain.Comment, error) {
+func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*[]domain.CommentDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	story := new(domain.Story)
-	err := conn.StoriesCollection.FindOne(context.TODO(), bson.D{{"_id", storyID}}).Decode(story)
+	cur, err := conn.CommentsCollection.Find(context.TODO(), bson.D{{"storyId", storyID}})
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -82,34 +62,11 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 		return  nil, fmt.Errorf("error processing data")
 	}
 
-	query := bson.M{"_id": bson.M{"$in": story.Comments}}
-
-	cur, err := conn.CommentsCollection.Find(context.TODO(), query)
-
-	if err != nil {
-		return nil, fmt.Errorf("error processing data")
+	if err = cur.All(context.TODO(), &c.CommentDtoList); err != nil {
+		log.Fatal(err)
 	}
 
-	// Finding multiple documents returns a cursor
-	// Iterating through the cursor allows us to decode documents one at a time
-	for cur.Next(context.TODO()) {
-
-		// create a value into which the single document can be decoded
-		var elem domain.Comment
-		err = cur.Decode(&elem)
-
-		if err != nil {
-			return nil, fmt.Errorf("error processing data")
-		}
-
-		c.CommentList = append(c.CommentList, elem)
-	}
-
-	err = cur.Err()
-
-	if err != nil {
-		return nil, fmt.Errorf("error processing data")
-	}
+	fmt.Println(c.CommentDtoList)
 
 	// Close the cursor once finished
 	err = cur.Close(context.TODO())
@@ -118,7 +75,7 @@ func (c CommentRepoImpl) FindAllCommentsByStoryId(storyID primitive.ObjectID) (*
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	return &c.CommentList, nil
+	return &c.CommentDtoList, nil
 }
 
 func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error) {

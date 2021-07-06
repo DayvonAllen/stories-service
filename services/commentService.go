@@ -9,7 +9,7 @@ import (
 type CommentService interface {
 	Create(comment *domain.Comment) error
 	FindById(id primitive.ObjectID) (*domain.Comment, error)
-	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.Comment, error)
+	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error)
 	DeleteById(id primitive.ObjectID) error
 }
@@ -34,7 +34,7 @@ func (c DefaultCommentService) FindById(id primitive.ObjectID) (*domain.Comment,
 	return comment, nil
 }
 
-func (c DefaultCommentService) FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.Comment, error) {
+func (c DefaultCommentService) FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error) {
 	comment, err := c.repo.FindAllCommentsByStoryId(id)
 	if err != nil {
 		return nil, err

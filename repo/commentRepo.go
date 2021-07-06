@@ -8,7 +8,7 @@ import (
 type CommentRepo interface {
 	Create(comment *domain.Comment) error
 	FindById(id primitive.ObjectID) (*domain.Comment, error)
-	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.Comment, error)
+	FindAllCommentsByStoryId(id primitive.ObjectID) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string) (*domain.Comment, error)
 	DeleteById(id primitive.ObjectID) error
 }

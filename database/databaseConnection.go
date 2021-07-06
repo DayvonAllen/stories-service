@@ -10,11 +10,11 @@ import (
 
 type Connection struct {
 	*mongo.Client
-	UserCollection *mongo.Collection
-	StoriesCollection *mongo.Collection
-	TagsCollection *mongo.Collection
+	UserCollection     *mongo.Collection
+	CommentCollection  *mongo.Collection
+	TagsCollection     *mongo.Collection
 	CommentsCollection *mongo.Collection
-	LikesCollection *mongo.Collection
+	LikesCollection    *mongo.Collection
 	DislikesCollection *mongo.Collection
 	*mongo.Database
 }

@@ -31,6 +31,8 @@ func SetupRoutes(app *fiber.App) {
 
 	comments := api.Group("/comment")
 	comments.Post("/:id", middleware.IsLoggedIn, ch.CreateCommentOnStory)
+	comments.Put("/like/:id", ch.LikeComment)
+	comments.Put("/dislike/:id", ch.DisLikeComment)
 	comments.Put("/:id",  ch.UpdateById)
 	comments.Delete("/:id", ch.DeleteById)
 }

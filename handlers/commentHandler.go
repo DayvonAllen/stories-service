@@ -30,6 +30,9 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 
+	comment.Likes = make([]string,0,0)
+	comment.Dislikes = make([]string,0,0)
+
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
@@ -82,6 +85,56 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
 	_, err = ch.CommentService.UpdateById(id, comment.Content, comment.Edited, comment.UpdatedAt, u.Username)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
+}
+
+func (ch *CommentHandler) LikeComment(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	err = ch.CommentService.LikeCommentById(id, u.Username)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
+}
+
+func (ch *CommentHandler) DisLikeComment(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	err = ch.CommentService.DisLikeCommentById(id, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

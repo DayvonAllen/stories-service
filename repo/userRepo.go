@@ -7,7 +7,6 @@ import (
 type UserRepo interface {
 	Create(*domain.User) error
 	FindByUsername(string) (*domain.User, error)
-	UpdateByID(*domain.User)  error
+	UpdateByID(*domain.User) error
 	DeleteByID(*domain.User) error
 }
-

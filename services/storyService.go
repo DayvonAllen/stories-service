@@ -8,7 +8,7 @@ import (
 
 type StoryService interface {
 	Create(dto *domain.CreateStoryDto) error
-	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag, bool)  error
+	UpdateById(primitive.ObjectID, string, string, string, *[]domain.Tag, bool) error
 	FindAll(string, bool) (*[]domain.Story, error)
 	FeaturedStories() (*[]domain.FeaturedStoryDto, error)
 	LikeStoryById(primitive.ObjectID, string) error

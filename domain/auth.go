@@ -13,13 +13,13 @@ import (
 )
 
 type Authentication struct {
-	Id primitive.ObjectID
+	Id       primitive.ObjectID
 	Username string `bson:"username" json:"username"`
 }
 
 // LoginDetails todo validate struct
 type LoginDetails struct {
-	Email string `bson:"email" json:"email"`
+	Email    string `bson:"email" json:"email"`
 	Password string `bson:"password" json:"password"`
 }
 
@@ -31,7 +31,7 @@ type Claims struct {
 
 var k = config.Config("SECRET")
 
-func (l Authentication) GenerateJWT(msg User) (string, error){
+func (l Authentication) GenerateJWT(msg User) (string, error) {
 	e, err := strconv.Atoi(config.Config("EXPIRATION"))
 
 	if err != nil {
@@ -76,15 +76,15 @@ func (l Authentication) VerifySignature(token, sig []byte) (bool, error) {
 	return hmac.Equal(sig, s), err
 }
 
-func(l Authentication) IsLoggedIn(tokenValue string) (*Authentication, bool, error)  {
-	if tokenValue == ""  {
+func (l Authentication) IsLoggedIn(tokenValue string) (*Authentication, bool, error) {
+	if tokenValue == "" {
 		return nil, false, fmt.Errorf("no token")
 	}
 
 	data, err := ExtractData(tokenValue)
 
 	if err != nil {
-		return nil,false, err
+		return nil, false, err
 	}
 
 	validSig, err := l.VerifySignature([]byte(data[0]), []byte(data[1]))
@@ -97,7 +97,7 @@ func(l Authentication) IsLoggedIn(tokenValue string) (*Authentication, bool, err
 		return nil, false, err
 	}
 
-	token, err := jwt.ParseWithClaims(data[0], &Claims{},func(t *jwt.Token)(interface{}, error) {
+	token, err := jwt.ParseWithClaims(data[0], &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if t.Method.Alg() == jwt.SigningMethodHS256.Alg() {
 			//verify token(we pass in our key to be verified)
 			return []byte(k), nil

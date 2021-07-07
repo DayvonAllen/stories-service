@@ -39,8 +39,8 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	comment.Likes = make([]string,0,0)
-	comment.Dislikes = make([]string,0,0)
+	comment.Likes = make([]string, 0, 0)
+	comment.Dislikes = make([]string, 0, 0)
 	comment.Replies = make([]domain.CommentDto, 0, 0)
 	comment.Id = primitive.NewObjectID()
 	comment.AuthorUsername = u.Username
@@ -83,8 +83,8 @@ func (ch *CommentHandler) CreateCommentOnComment(c *fiber.Ctx) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	comment.Likes = make([]string,0,0)
-	comment.Dislikes = make([]string,0,0)
+	comment.Likes = make([]string, 0, 0)
+	comment.Dislikes = make([]string, 0, 0)
 	comment.Replies = make([]domain.CommentDto, 0, 0)
 	comment.Id = primitive.NewObjectID()
 	comment.AuthorUsername = u.Username

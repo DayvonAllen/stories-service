@@ -18,11 +18,11 @@ import (
 )
 
 type StoryRepoImpl struct {
-	Story        domain.Story
-	StoryDto     domain.StoryDto
-	FeaturedStoryList    []domain.FeaturedStoryDto
-	StoryList    []domain.Story
-	StoryDtoList []domain.StoryDto
+	Story             domain.Story
+	StoryDto          domain.StoryDto
+	FeaturedStoryList []domain.FeaturedStoryDto
+	StoryList         []domain.Story
+	StoryDtoList      []domain.StoryDto
 }
 
 func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
@@ -38,19 +38,18 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	return nil
 }
 
-func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag, updated bool)  error {
+func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newTitle string, username string, tags *[]domain.Tag, updated bool) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
-
 
 	filter := bson.D{{"_id", id}, {"authorUsername", username}}
 	update := bson.D{{"$set",
 		bson.D{{"content", newContent},
-		{"title", newTitle},
-		{"updatedAt", time.Now()},
-		{"tags", tags},
-		{"updated", updated},
-	},
+			{"title", newTitle},
+			{"updatedAt", time.Now()},
+			{"tags", tags},
+			{"updated", updated},
+		},
 	}}
 
 	_, err := conn.StoryCollection.UpdateOne(context.TODO(),
@@ -184,7 +183,7 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 		s.Story.DislikeCount = len(s.Story.Dislikes)
 		s.Story.Score++
 
-		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1},  "$set": bson.D{{"dislikeCount", s.Story.DislikeCount}, {"score", s.Story.Score}}}
+		update = bson.M{"$push": bson.M{"likes": username}, "$inc": bson.M{"likeCount": 1}, "$set": bson.D{{"dislikeCount", s.Story.DislikeCount}, {"score", s.Story.Score}}}
 
 		filter = bson.D{{"_id", storyId}}
 
@@ -261,7 +260,7 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 		s.Story.LikeCount = len(s.Story.Likes)
 		s.Story.Score--
 
-		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1},  "$set": bson.D{{"likeCount", s.Story.LikeCount}, {"score", s.Story.Score}}}
+		update = bson.M{"$push": bson.M{"dislikes": username}, "$inc": bson.M{"dislikeCount": 1}, "$set": bson.D{{"likeCount", s.Story.LikeCount}, {"score", s.Story.Score}}}
 
 		filter = bson.D{{"_id", storyId}}
 

@@ -6,7 +6,6 @@ import (
 	"fmt"
 )
 
-
 func ProcessMessage(message domain.UserMessage) error {
 
 	// 201 is the created messageType
@@ -25,7 +24,7 @@ func ProcessMessage(message domain.UserMessage) error {
 		if err != nil {
 			return err
 		}
-		return  nil
+		return nil
 	}
 
 	// 204 is the deleted messageType

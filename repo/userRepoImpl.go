@@ -24,7 +24,6 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 			bson.M{"email": user.Email},
 			bson.M{"username": user.Username},
 		},
-
 	})
 
 	if err != nil {
@@ -55,7 +54,7 @@ func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, err
 		}
-		return  nil, fmt.Errorf("error processing data")
+		return nil, fmt.Errorf("error processing data")
 	}
 
 	return &u.user, nil

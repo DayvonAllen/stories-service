@@ -19,22 +19,22 @@ type Comment struct {
 	DislikeCount   int                `bson:"dislikeCount" json:"-"`
 	CreatedAt      time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt      time.Time          `bson:"updatedAt" json:"-"`
-	CreatedDate string 				`bson:"createdDate" json:"-"`
-	UpdatedDate string 				`bson:"updatedDate" json:"-"`
+	CreatedDate    string             `bson:"createdDate" json:"-"`
+	UpdatedDate    string             `bson:"updatedDate" json:"-"`
 }
 
 type CommentDto struct {
-	Id        		primitive.ObjectID `bson:"_id" json:"id"`
-	Content string  		`bson:"content" json:"content"`
-	AuthorUsername string  `bson:"authorUsername" json:"authorUsername"`
-	LikeCount int                `bson:"likeCount" json:"likeCount"`
-	DislikeCount int             `bson:"dislikeCount" json:"dislikeCount"`
-	Edited   bool         		`bson:"edited" json:"edited"`
-	Replies        *[]CommentDto       `bson:"replies" json:"replies"`
-	CurrentUserLiked bool        `bson:"currentUserLiked" json:"currentUserLiked"`
-	CurrentUserDisLiked bool        `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
-	CreatedAt time.Time          `json:"createdAt"`
-	UpdatedAt time.Time          `json:"updatedAt"`
-	CreatedDate string 				`json:"createdDate"`
-	UpdatedDate string 				`json:"updatedDate"`
+	Id                  primitive.ObjectID `bson:"_id" json:"id"`
+	Content             string             `bson:"content" json:"content"`
+	AuthorUsername      string             `bson:"authorUsername" json:"authorUsername"`
+	LikeCount           int                `bson:"likeCount" json:"likeCount"`
+	DislikeCount        int                `bson:"dislikeCount" json:"dislikeCount"`
+	Edited              bool               `bson:"edited" json:"edited"`
+	Replies             *[]CommentDto      `bson:"replies" json:"replies"`
+	CurrentUserLiked    bool               `bson:"currentUserLiked" json:"currentUserLiked"`
+	CurrentUserDisLiked bool               `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
+	CreatedAt           time.Time          `json:"createdAt"`
+	UpdatedAt           time.Time          `json:"updatedAt"`
+	CreatedDate         string             `json:"createdDate"`
+	UpdatedDate         string             `json:"updatedDate"`
 }

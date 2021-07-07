@@ -24,7 +24,7 @@ type DefaultCommentService struct {
 }
 
 func (c DefaultCommentService) Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error {
-	err := c.repo.Create(comment, mongoCollection,conn, dbType)
+	err := c.repo.Create(comment, mongoCollection, conn, dbType)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,6 @@ func (c DefaultCommentService) UpdateFlagCount(flag *domain.Flag) error {
 	}
 	return nil
 }
-
 
 func (c DefaultCommentService) DeleteById(id primitive.ObjectID, username string) error {
 	err := c.repo.DeleteById(id, username)

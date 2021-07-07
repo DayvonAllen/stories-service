@@ -12,20 +12,22 @@ type Connection struct {
 	*mongo.Client
 	UserCollection     *mongo.Collection
 	StoryCollection    *mongo.Collection
-	FlagCollection    *mongo.Collection
+	FlagCollection     *mongo.Collection
 	CommentsCollection *mongo.Collection
 	*mongo.Database
 }
 
-func ConnectToDB() (*Connection,error) {
+func ConnectToDB() (*Connection, error) {
 	p := config.Config("DB_PORT")
 	n := config.Config("DB_NAME")
 	h := config.Config("DB_HOST")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(n + h + p))
-	if err != nil { return nil, err }
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(n+h+p))
+	if err != nil {
+		return nil, err
+	}
 
 	// create database
 	db := client.Database("stories-service")

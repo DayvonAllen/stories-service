@@ -29,14 +29,13 @@ func SetupRoutes(app *fiber.App) {
 	stories.Delete("/:id", sh.DeleteStory)
 	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
 
-
 	comments := api.Group("/comment")
 	comments.Post("/reply/:id", ch.CreateCommentOnComment)
 	comments.Post("/:id", ch.CreateCommentOnStory)
 	comments.Put("/like/:id", ch.LikeComment)
 	comments.Put("/dislike/:id", ch.DisLikeComment)
 	comments.Put("/flag/:id", ch.UpdateFlagCount)
-	comments.Put("/:id",  ch.UpdateById)
+	comments.Put("/:id", ch.UpdateById)
 	comments.Delete("/:id", ch.DeleteById)
 }
 
@@ -49,4 +48,3 @@ func Setup() *fiber.App {
 	SetupRoutes(app)
 	return app
 }
-

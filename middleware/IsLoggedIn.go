@@ -24,4 +24,3 @@ func IsLoggedIn(c *fiber.Ctx) error {
 
 	return nil
 }
-

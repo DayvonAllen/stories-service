@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func ExtractData(token  string) ([]string, error) {
+func ExtractData(token string) ([]string, error) {
 	if token == "" {
 		return nil, fmt.Errorf("no token provided")
 	}
@@ -16,5 +16,5 @@ func ExtractData(token  string) ([]string, error) {
 	}
 
 	tokenValue := strings.Split(xs[1], "|")
-	return  tokenValue, nil
+	return tokenValue, nil
 }

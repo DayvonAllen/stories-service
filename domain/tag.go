@@ -6,16 +6,16 @@ import (
 )
 
 type Tag struct {
-	Value string `bson:"value" json:"value"`
-	CreepyPasta bool `bson:"-" json:"-"`
-	TrueScaryStory bool `bson:"-" json:"-"`
-	CampFire bool `bson:"-" json:"-"`
-	Paranormal bool `bson:"-" json:"-"`
-	GhostStory bool `bson:"-" json:"-"`
-	Other bool `bson:"-" json:"-"`
+	Value          string `bson:"value" json:"value"`
+	CreepyPasta    bool   `bson:"-" json:"-"`
+	TrueScaryStory bool   `bson:"-" json:"-"`
+	CampFire       bool   `bson:"-" json:"-"`
+	Paranormal     bool   `bson:"-" json:"-"`
+	GhostStory     bool   `bson:"-" json:"-"`
+	Other          bool   `bson:"-" json:"-"`
 }
 
-func (t Tag) ValidateTag(tagValidator *Tag)  error {
+func (t Tag) ValidateTag(tagValidator *Tag) error {
 	switch tag := strings.ToLower(t.Value); tag {
 	case "creepypasta":
 		if !tagValidator.CreepyPasta {

@@ -16,5 +16,3 @@ var MongoConnectionPool = sync.Pool{
 		return dbConnection
 	},
 }
-
-

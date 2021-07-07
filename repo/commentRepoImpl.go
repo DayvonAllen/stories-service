@@ -24,32 +24,55 @@ type CommentRepoImpl struct {
 
 func (c CommentRepoImpl) Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error {
 	if dbType == "comment" {
-		obj := new(domain.Comment)
-		err := mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.ResourceId}}).Decode(&obj)
+		// sets mongo's read and write concerns
+		wc := writeconcern.New(writeconcern.WMajority())
+		rc := readconcern.Snapshot()
+		txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
+
+		// set up for a transaction
+		session, err := conn.StartSession()
 
 		if err != nil {
-			return fmt.Errorf("resource not found")
+			panic(err)
 		}
 
-		_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
+		defer session.EndSession(context.Background())
+
+		callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
+
+			obj := new(domain.Comment)
+			err = mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.ResourceId}}).Decode(&obj)
+
+			if err != nil {
+				return nil, fmt.Errorf("resource not found")
+			}
+
+			_, err = conn.CommentsCollection.InsertOne(context.TODO(), &comment)
+
+			if err != nil {
+				return nil, fmt.Errorf("error!!!")
+			}
+
+			err = mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.Id}}).Decode(&c.CommentDto)
+
+			obj.Replies = append(obj.Replies, c.CommentDto)
+
+			filter := bson.D{{"_id", obj.Id}}
+			update := bson.D{{"$set", bson.D{{"replies", obj.Replies}}}}
+
+			_, err = conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
+
+			return nil, err
+		}
+
+		_, err = session.WithTransaction(context.Background(), callback, txnOpts)
 
 		if err != nil {
-			return fmt.Errorf("error!!!")
+			return fmt.Errorf("failed to create comment")
 		}
-
-		err = mongoCollection.FindOne(context.TODO(), bson.D{{"_id", comment.Id}}).Decode(&c.CommentDto)
-
-		obj.Replies = append(obj.Replies, c.CommentDto)
-
-		fmt.Println(obj.Id)
-		fmt.Println(obj.Replies)
-
-		filter := bson.D{{"_id", obj.Id}}
-		update := bson.D{{"$set", bson.D{{"replies", obj.Replies}}}}
-
-		_, err = conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
 
 		return nil
+
 	}
 
 	obj := new(domain.Story)
@@ -154,11 +177,7 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 		filter := bson.D{{"_id", commentId}}
 		update := bson.M{"$pull": bson.M{"dislikes": username}}
 
-		fmt.Println("ran")
-
 		res, err := conn.CommentsCollection.UpdateOne(context.TODO(), filter, update)
-
-		fmt.Println("ran")
 
 		if err != nil {
 			return nil, err
@@ -235,7 +254,6 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
 
-		fmt.Println(commentId)
 		filter := bson.D{{"_id", commentId}}
 		update := bson.M{"$pull": bson.M{"likes": username}}
 

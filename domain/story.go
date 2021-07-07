@@ -77,6 +77,7 @@ type CreateStoryDto struct {
 	UpdatedDate    string    `bson:"updatedDate" json:"-"`
 }
 
+
 type UpdateStoryDto struct {
 	Title       string    `bson:"title" json:"title"`
 	Content     string    `bson:"content" json:"content"`

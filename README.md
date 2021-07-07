@@ -96,4 +96,10 @@
     "content": "reply"
 }
 ```  
+- Get all read later items by username
+  - `GET:http://localhost:8081/read`
+- Add Story to read later list:
+  - `POST:http://localhost:8081/read/<Story ID>`
+- Delete Story from read later list:
+  - `DELETE:http://localhost:8081/read/<Story ID>`
 ---

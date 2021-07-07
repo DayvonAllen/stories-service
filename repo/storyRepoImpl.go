@@ -297,10 +297,10 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	s.StoryDto.CurrentUserLiked = helper.CurrentUserStoryInteraction(s.StoryDto.Likes, username)
+	s.StoryDto.CurrentUserLiked = helper.CurrentUserInteraction(s.StoryDto.Likes, username)
 
 	if !s.StoryDto.CurrentUserLiked {
-		s.StoryDto.CurrentUserDisLiked = helper.CurrentUserStoryInteraction(s.StoryDto.Dislikes, username)
+		s.StoryDto.CurrentUserDisLiked = helper.CurrentUserInteraction(s.StoryDto.Dislikes, username)
 	}
 
 	s.StoryDto.Comments, err = CommentRepoImpl{}.FindAllCommentsByResourceId(s.StoryDto.Id, username)

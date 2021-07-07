@@ -12,7 +12,6 @@ type Comment struct {
 	Content        string             `bson:"content" json:"content"`
 	AuthorUsername string             `bson:"authorUsername" json:"-"`
 	Edited         bool               `bson:"edited" json:"-"`
-	Replies        []CommentDto       `bson:"replies" json:"replies"`
 	Likes          []string           `bson:"likes" json:"-"`
 	Dislikes       []string           `bson:"dislikes" json:"-"`
 	LikeCount      int                `bson:"likeCount" json:"-"`
@@ -32,7 +31,7 @@ type CommentDto struct {
 	LikeCount           int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount        int                `bson:"dislikeCount" json:"dislikeCount"`
 	Edited              bool               `bson:"edited" json:"edited"`
-	Replies             *[]CommentDto      `bson:"replies" json:"replies"`
+	Replies             *[]Reply      `bson:"replies" json:"replies"`
 	CurrentUserLiked    bool               `bson:"currentUserLiked" json:"currentUserLiked"`
 	CurrentUserDisLiked bool               `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
 	CreatedAt           time.Time          `json:"createdAt"`
@@ -40,3 +39,4 @@ type CommentDto struct {
 	CreatedDate         string             `json:"createdDate"`
 	UpdatedDate         string             `json:"updatedDate"`
 }
+

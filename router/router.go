@@ -15,6 +15,7 @@ func SetupRoutes(app *fiber.App) {
 	ch := handlers.CommentHandler{CommentService: services.NewCommentService(repo.NewCommentRepoImpl())}
 	sh := handlers.StoryHandler{StoryService: services.NewStoryService(repo.NewStoryRepoImpl())}
 	rh := handlers.ReadLaterHandler{ReadLaterService: services.NewReadLaterService(repo.NewReadLaterRepoImpl())}
+	reh := handlers.ReplyHandler{ReplyService: services.NewReplyService(repo.NewReplyRepoImpl())}
 
 	app.Use(recover.New())
 	api := app.Group("", logger.New())
@@ -31,13 +32,20 @@ func SetupRoutes(app *fiber.App) {
 	stories.Get("/", middleware.IsLoggedIn, sh.FindAll)
 
 	comments := api.Group("/comment")
-	comments.Post("/reply/:id", ch.CreateCommentOnComment)
 	comments.Post("/:id", ch.CreateCommentOnStory)
 	comments.Put("/like/:id", ch.LikeComment)
 	comments.Put("/dislike/:id", ch.DisLikeComment)
 	comments.Put("/flag/:id", ch.UpdateFlagCount)
 	comments.Put("/:id", ch.UpdateById)
 	comments.Delete("/:id", ch.DeleteById)
+
+	reply := api.Group("/reply")
+	reply.Post("/:id", reh.CreateReply)
+	reply.Put("/like/:id", reh.LikeReply)
+	reply.Put("/dislike/:id", reh.DisLikeReply)
+	reply.Put("/flag/:id", reh.UpdateFlagCount)
+	reply.Put("/:id", reh.UpdateById)
+	reply.Delete("/:id", reh.DeleteById)
 
 	readLater := api.Group("/read")
 	readLater.Post("/:id", rh.Create)

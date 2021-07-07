@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"example.com/app/database"
 	"example.com/app/domain"
 	"example.com/app/services"
 	"fmt"
@@ -11,11 +10,11 @@ import (
 	"time"
 )
 
-type CommentHandler struct {
-	CommentService services.CommentService
+type ReplyHandler struct {
+	ReplyService services.ReplyService
 }
 
-func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
+func (rh *ReplyHandler) CreateReply(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	token := c.Get("Authorization")
 
@@ -26,9 +25,9 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
 	}
 
-	comment := new(domain.Comment)
+	reply := new(domain.Reply)
 
-	err = c.BodyParser(comment)
+	err = c.BodyParser(reply)
 
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 
@@ -36,20 +35,17 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	conn := database.MongoConnectionPool.Get().(*database.Connection)
-	defer database.MongoConnectionPool.Put(conn)
+	reply.Likes = make([]string, 0, 0)
+	reply.Dislikes = make([]string, 0, 0)
+	reply.Id = primitive.NewObjectID()
+	reply.AuthorUsername = u.Username
+	reply.ResourceId = id
+	reply.CreatedAt = time.Now()
+	reply.UpdatedAt = time.Now()
+	reply.CreatedDate = reply.CreatedAt.Format("January 2, 2006 at 3:04pm")
+	reply.UpdatedDate = reply.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
-	comment.Likes = make([]string, 0, 0)
-	comment.Dislikes = make([]string, 0, 0)
-	comment.Id = primitive.NewObjectID()
-	comment.AuthorUsername = u.Username
-	comment.ResourceId = id
-	comment.CreatedAt = time.Now()
-	comment.UpdatedAt = time.Now()
-	comment.CreatedDate = comment.CreatedAt.Format("January 2, 2006 at 3:04pm")
-	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
-
-	err = ch.CommentService.Create(comment)
+	err = rh.ReplyService.Create(reply)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -58,7 +54,7 @@ func (ch *CommentHandler) CreateCommentOnStory(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
+func (rh *ReplyHandler) UpdateById(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	c.Accepts("application/json")
 	token := c.Get("Authorization")
@@ -70,9 +66,9 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
 	}
 
-	comment := new(domain.Comment)
+	reply := new(domain.Reply)
 
-	err = c.BodyParser(comment)
+	err = c.BodyParser(reply)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -84,11 +80,11 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	comment.UpdatedAt = time.Now()
-	comment.Edited = true
-	comment.UpdatedDate = comment.UpdatedAt.Format("January 2, 2006 at 3:04pm")
+	reply.UpdatedAt = time.Now()
+	reply.Edited = true
+	reply.UpdatedDate = reply.UpdatedAt.Format("January 2, 2006 at 3:04pm")
 
-	err = ch.CommentService.UpdateById(id, comment.Content, comment.Edited, comment.UpdatedAt, u.Username)
+	err = rh.ReplyService.UpdateById(id, reply.Content, reply.Edited, reply.UpdatedAt, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -97,7 +93,7 @@ func (ch *CommentHandler) UpdateById(c *fiber.Ctx) error {
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) LikeComment(c *fiber.Ctx) error {
+func (rh *ReplyHandler) LikeReply(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 
 	var auth domain.Authentication
@@ -113,7 +109,7 @@ func (ch *CommentHandler) LikeComment(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	err = ch.CommentService.LikeCommentById(id, u.Username)
+	err = rh.ReplyService.LikeReplyById(id, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -122,7 +118,7 @@ func (ch *CommentHandler) LikeComment(c *fiber.Ctx) error {
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) DisLikeComment(c *fiber.Ctx) error {
+func (rh *ReplyHandler) DisLikeReply(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 
 	var auth domain.Authentication
@@ -138,7 +134,7 @@ func (ch *CommentHandler) DisLikeComment(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	err = ch.CommentService.DisLikeCommentById(id, u.Username)
+	err = rh.ReplyService.DisLikeReplyById(id, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
@@ -147,7 +143,7 @@ func (ch *CommentHandler) DisLikeComment(c *fiber.Ctx) error {
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) UpdateFlagCount(c *fiber.Ctx) error {
+func (rh *ReplyHandler) UpdateFlagCount(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	token := c.Get("Authorization")
 
@@ -175,7 +171,7 @@ func (ch *CommentHandler) UpdateFlagCount(c *fiber.Ctx) error {
 	flag.FlaggedResource = id
 	flag.FlaggerID = u.Id
 
-	err = ch.CommentService.UpdateFlagCount(flag)
+	err = rh.ReplyService.UpdateFlagCount(flag)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -186,7 +182,7 @@ func (ch *CommentHandler) UpdateFlagCount(c *fiber.Ctx) error {
 	return c.Status(204).JSON(fiber.Map{"status": "success", "message": "success", "data": "success"})
 }
 
-func (ch *CommentHandler) DeleteById(c *fiber.Ctx) error {
+func (rh *ReplyHandler) DeleteById(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 
 	var auth domain.Authentication
@@ -202,7 +198,7 @@ func (ch *CommentHandler) DeleteById(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
-	err = ch.CommentService.DeleteById(id, u.Username)
+	err = rh.ReplyService.DeleteById(id, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

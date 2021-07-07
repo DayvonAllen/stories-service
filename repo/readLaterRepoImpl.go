@@ -57,7 +57,6 @@ func (r ReadLaterRepoImpl) GetByUsername(username string) (*domain.ReadLaterDto,
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	fmt.Println("rt")
 	cur, err := conn.ReadLaterCollection.Find(context.TODO(), bson.D{{"username", username}})
 
 	if err != nil {

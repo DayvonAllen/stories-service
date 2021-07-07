@@ -303,7 +303,7 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 		s.StoryDto.CurrentUserDisLiked = helper.CurrentUserStoryInteraction(s.StoryDto.Dislikes, username)
 	}
 
-	s.StoryDto.Comments, err = CommentRepoImpl{}.FindAllCommentsByResourceId(s.StoryDto.Id)
+	s.StoryDto.Comments, err = CommentRepoImpl{}.FindAllCommentsByResourceId(s.StoryDto.Id, username)
 
 	if err != nil {
 		return nil, err

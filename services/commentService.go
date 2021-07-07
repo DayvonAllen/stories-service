@@ -11,7 +11,7 @@ import (
 
 type CommentService interface {
 	Create(comment *domain.Comment, mongoCollection *mongo.Collection, conn *database.Connection, dbType string) error
-	FindAllCommentsByResourceId(id primitive.ObjectID) (*[]domain.CommentDto, error)
+	FindAllCommentsByResourceId(id primitive.ObjectID,  username string) (*[]domain.CommentDto, error)
 	UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error)
 	LikeCommentById(primitive.ObjectID, string) error
 	DisLikeCommentById(primitive.ObjectID, string) error
@@ -31,8 +31,8 @@ func (c DefaultCommentService) Create(comment *domain.Comment, mongoCollection *
 	return nil
 }
 
-func (c DefaultCommentService) FindAllCommentsByResourceId(id primitive.ObjectID) (*[]domain.CommentDto, error) {
-	comment, err := c.repo.FindAllCommentsByResourceId(id)
+func (c DefaultCommentService) FindAllCommentsByResourceId(id primitive.ObjectID,  username string) (*[]domain.CommentDto, error) {
+	comment, err := c.repo.FindAllCommentsByResourceId(id, username)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/app/database"
 	"example.com/app/domain"
+	"example.com/app/helper"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -92,7 +93,7 @@ func (c CommentRepoImpl) Create(comment *domain.Comment, mongoCollection *mongo.
 	return nil
 }
 
-func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.ObjectID) (*[]domain.CommentDto, error) {
+func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.ObjectID, username string) (*[]domain.CommentDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -117,7 +118,17 @@ func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.Object
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	return &c.CommentDtoList, nil
+	comments := make([]domain.CommentDto, 0, len(c.CommentDtoList))
+	for _, v := range  c.CommentDtoList {
+		v.CurrentUserLiked = helper.CurrentUserStoryInteraction(v.Likes, username)
+		fmt.Println(v)
+
+		if !v.CurrentUserLiked {
+			v.CurrentUserDisLiked = helper.CurrentUserStoryInteraction(v.Dislikes, username)
+		}
+		comments = append(comments, v)
+	}
+	return &comments, nil
 }
 
 func (c CommentRepoImpl) UpdateById(id primitive.ObjectID, newContent string, edited bool, updatedTime time.Time, username string) (*domain.Comment, error) {
@@ -196,12 +207,8 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 
 		filter = bson.D{{"_id", commentId}}
 
-		fmt.Println("ran")
-
 		_, err = conn.CommentsCollection.UpdateOne(context.TODO(),
 			filter, update)
-
-		fmt.Println("ran")
 
 		if err != nil {
 			return nil, err

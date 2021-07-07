@@ -27,6 +27,8 @@ type CommentDto struct {
 	Id                  primitive.ObjectID `bson:"_id" json:"id"`
 	Content             string             `bson:"content" json:"content"`
 	AuthorUsername      string             `bson:"authorUsername" json:"authorUsername"`
+	Likes          []string           `bson:"likes" json:"-"`
+	Dislikes       []string           `bson:"dislikes" json:"-"`
 	LikeCount           int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount        int                `bson:"dislikeCount" json:"dislikeCount"`
 	Edited              bool               `bson:"edited" json:"edited"`

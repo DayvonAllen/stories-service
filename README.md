@@ -84,4 +84,16 @@
 ```  
 - Delete Comment:
   -`DELETE:http://localhost:8081/comment/<Comment ID>`
+- Flag Story:
+  - `PUT:http://localhost:8081/stories/flag/<Story ID>`
+- Flag Comment:
+  - `PUT:http://localhost:8081/comment/flag/<Comment ID>`
+- Reply To Comment:
+  - `POST: http://localhost:8081/comment/reply/<Comment ID>`
+  - JSON:
+```
+{
+    "content": "reply"
+}
+```  
 ---

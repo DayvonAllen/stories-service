@@ -14,6 +14,7 @@ import (
 func SetupRoutes(app *fiber.App) {
 	ch := handlers.CommentHandler{CommentService: services.NewCommentService(repo.NewCommentRepoImpl())}
 	sh := handlers.StoryHandler{StoryService: services.NewStoryService(repo.NewStoryRepoImpl())}
+	rh := handlers.ReadLaterHandler{ReadLaterService: services.NewReadLaterService(repo.NewReadLaterRepoImpl())}
 
 	app.Use(recover.New())
 	api := app.Group("", logger.New())
@@ -37,6 +38,12 @@ func SetupRoutes(app *fiber.App) {
 	comments.Put("/flag/:id", ch.UpdateFlagCount)
 	comments.Put("/:id", ch.UpdateById)
 	comments.Delete("/:id", ch.DeleteById)
+
+	readLater := api.Group("/read")
+	readLater.Post("/:id", rh.Create)
+	readLater.Get("/", rh.GetByUsername)
+	readLater.Delete("/:id", rh.Delete)
+
 }
 
 func Setup() *fiber.App {

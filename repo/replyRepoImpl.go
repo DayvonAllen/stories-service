@@ -297,22 +297,17 @@ func (r ReplyRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 		res, err := conn.RepliesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
-		if res.DeletedCount == 0 {
+		if res.DeletedCount == 0  {
 			return nil, fmt.Errorf("failed to delete reply")
 		}
 
 		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		return nil, err

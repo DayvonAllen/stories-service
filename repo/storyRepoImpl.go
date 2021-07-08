@@ -359,10 +359,7 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 		res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		if res.DeletedCount == 0 {
@@ -372,28 +369,19 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		_, err = conn.ReadLaterCollection.DeleteMany(context.TODO(), bson.D{{"story._id", id}})
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		err = CommentRepoImpl{}.DeleteManyById(id, username)
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		return nil, err

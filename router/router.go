@@ -16,6 +16,7 @@ func SetupRoutes(app *fiber.App) {
 	sh := handlers.StoryHandler{StoryService: services.NewStoryService(repo.NewStoryRepoImpl())}
 	rh := handlers.ReadLaterHandler{ReadLaterService: services.NewReadLaterService(repo.NewReadLaterRepoImpl())}
 	reh := handlers.ReplyHandler{ReplyService: services.NewReplyService(repo.NewReplyRepoImpl())}
+	uh := handlers.UserHandler{UserService: services.NewUserService(repo.NewUserRepoImpl())}
 
 	app.Use(recover.New())
 	api := app.Group("", logger.New())
@@ -51,6 +52,10 @@ func SetupRoutes(app *fiber.App) {
 	readLater.Post("/:id", rh.Create)
 	readLater.Get("/", rh.GetByUsername)
 	readLater.Delete("/:id", rh.Delete)
+
+	profile := api.Group("/profile")
+	profile.Get("/", uh.GetCurrentUserProfile)
+
 
 }
 

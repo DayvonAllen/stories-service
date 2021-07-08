@@ -100,6 +100,30 @@ func (s StoryRepoImpl) FindAll(page string, newStoriesQuery bool) (*[]domain.Sto
 	return &s.StoryList, nil
 }
 
+func (s StoryRepoImpl) FindAllByUsername(username string) (*[]domain.StoryDto, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	cur, err := conn.StoryCollection.Find(context.TODO(), bson.D{{"authorUsername", username}})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cur.All(context.TODO(), &s.StoryDtoList); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the cursor once finished
+	err = cur.Close(context.TODO())
+
+	if err != nil {
+		return nil, fmt.Errorf("error processing data")
+	}
+
+	return &s.StoryDtoList, nil
+}
+
 func (s StoryRepoImpl) FeaturedStories() (*[]domain.FeaturedStoryDto, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)

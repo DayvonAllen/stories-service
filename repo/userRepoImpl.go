@@ -15,6 +15,7 @@ import (
 
 type UserRepoImpl struct {
 	user domain.User
+	currentUser domain.CurrentUserProfile
 }
 
 func (u UserRepoImpl) Create(user *domain.User) error {
@@ -45,11 +46,11 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 	return fmt.Errorf("user already exists")
 }
 
-func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
+func (u UserRepoImpl) GetCurrentUserProfile(username string) (*domain.CurrentUserProfile, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	err := conn.UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.user)
+	err := conn.UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.currentUser)
 
 	if err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
@@ -59,7 +60,14 @@ func (u UserRepoImpl) FindByUsername(username string) (*domain.User, error) {
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	return &u.user, nil
+	stories, err := StoryRepoImpl{}.FindAllByUsername(username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	u.currentUser.Post = *stories
+	return &u.currentUser, nil
 }
 
 func (u UserRepoImpl) UpdateByID(user *domain.User) error {
@@ -123,4 +131,10 @@ func (u UserRepoImpl) DeleteByID(user *domain.User) error {
 	}
 
 	return nil
+}
+
+func NewUserRepoImpl() UserRepoImpl {
+	var userRepoImpl UserRepoImpl
+
+	return userRepoImpl
 }

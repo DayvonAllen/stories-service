@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/app/database"
 	"example.com/app/domain"
+	"example.com/app/helper"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
@@ -67,7 +68,8 @@ func (u UserRepoImpl) GetCurrentUserProfile(username string) (*domain.CurrentUse
 		return nil, err
 	}
 
-	u.currentUser.Post = *stories
+	u.currentUser.Posts = *stories
+
 	return &u.currentUser, nil
 }
 
@@ -96,7 +98,8 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 		return nil, err
 	}
 
-	u.viewedUser.Post = *stories
+	u.viewedUser.Posts = *stories
+	u.viewedUser.IsFollowing = helper.CurrentUserInteraction(u.viewedUser.Followers, username)
 	return &u.viewedUser, nil
 }
 

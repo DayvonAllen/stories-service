@@ -30,7 +30,8 @@ type ViewUserProfile struct {
 	ProfileIsViewable           bool       `json:"-"`
 	DisplayFollowerCount        bool       `json:"displayFollowerCount"`
 	IsFollowing                 bool       `json:"isFollowing"`
-	Post                        []StoryDto `json:"post"`
+	Posts                       []StoryDto `json:"posts"`
+	Followers                   []string   `json:"-"`
 }
 
 type CurrentUserProfile struct {
@@ -40,5 +41,5 @@ type CurrentUserProfile struct {
 	ProfileBackgroundPictureUrl string     `json:"profileBackgroundPictureUrl"`
 	CurrentBadgeUrl             string     `json:"currentBadgeUrl"`
 	FollowerCount               int        `json:"followerCount"`
-	Post                        []StoryDto `json:"post"`
+	Posts                       []StoryDto `json:"posts"`
 }

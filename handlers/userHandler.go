@@ -33,7 +33,7 @@ func (uh *UserHandler) GetCurrentUserProfile(c *fiber.Ctx) error {
 func (uh *UserHandler) GetUserProfile(c *fiber.Ctx) error {
 	username := c.Params("username")
 
-	user, err := uh.UserService.GetCurrentUserProfile(username)
+	user, err := uh.UserService.GetUserProfile(username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

@@ -76,8 +76,6 @@ func (r ReadLaterRepoImpl) GetByUsername(username string) (*domain.ReadLaterDto,
 
 	r.ReadLaterDto.ReadLaterItems = r.ReadLaterList
 
-	fmt.Println(r.ReadLaterDto)
-
 	return &r.ReadLaterDto, nil
 }
 

@@ -19,7 +19,7 @@ import (
 type CommentRepoImpl struct {
 	Comment        domain.Comment
 	CommentDto     domain.CommentDto
-	Reply     domain.Reply
+	Reply          domain.Reply
 	CommentList    []domain.Comment
 	CommentDtoList []domain.CommentDto
 }
@@ -71,7 +71,7 @@ func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.Object
 	}
 
 	comments := make([]domain.CommentDto, 0, len(c.CommentDtoList))
-	for _, v := range  c.CommentDtoList {
+	for _, v := range c.CommentDtoList {
 		v.CurrentUserLiked = helper.CurrentUserInteraction(v.Likes, username)
 		if !v.CurrentUserLiked {
 			v.CurrentUserDisLiked = helper.CurrentUserInteraction(v.Dislikes, username)
@@ -344,7 +344,6 @@ func (c CommentRepoImpl) DeleteManyById(id primitive.ObjectID, username string) 
 
 	err := conn.CommentsCollection.FindOne(context.TODO(), bson.D{{"resourceId", id}}).Decode(&c.Comment)
 
-
 	// sets mongo's read and write concerns
 	wc := writeconcern.New(writeconcern.WMajority())
 	rc := readconcern.Snapshot()
@@ -363,33 +362,22 @@ func (c CommentRepoImpl) DeleteManyById(id primitive.ObjectID, username string) 
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
 		res, err := conn.CommentsCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", id}, {"authorUsername", username}})
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		if res.DeletedCount == 0 {
-			return nil, fmt.Errorf("failed to delete comment")
+			return nil, err
 		}
 
 		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
-
 
 		_, err = conn.RepliesCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", c.Comment.Id}})
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
-
 
 		return nil, err
 	}

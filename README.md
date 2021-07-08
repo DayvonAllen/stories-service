@@ -66,6 +66,10 @@
     - `http://localhost:8081/comment/like/<Comment ID>`
 - Dislike Comment:
     - `http://localhost:8081/comment/dislike/<Comment ID>`
+- Like Reply:
+  - `http://localhost:8081/reply/like/<Reply ID>`
+- Dislike Reply:
+  - `http://localhost:8081/reply/dislike/<Reply ID>`  
 - Comment On A Story:
   -`POST:http://localhost:8081/comment/<Story ID>`
   - JSON:
@@ -75,7 +79,15 @@
 }
 ```  
 - Update comment:
-  -`PUT:http://localhost:8081/stories/<Comment ID>`
+  -`PUT:http://localhost:8081/comment/<Comment ID>`
+  - JSON:
+```
+{
+    "content": "Nice story"
+}
+```  
+- Update Reply:
+  -`PUT:http://localhost:8081/reply/<Reply ID>`
   - JSON:
 ```
 {
@@ -84,12 +96,16 @@
 ```  
 - Delete Comment:
   -`DELETE:http://localhost:8081/comment/<Comment ID>`
+- Delete Reply:
+  -`DELETE:http://localhost:8081/reply/<Reply ID>`  
 - Flag Story:
   - `PUT:http://localhost:8081/stories/flag/<Story ID>`
 - Flag Comment:
   - `PUT:http://localhost:8081/comment/flag/<Comment ID>`
+- Flag Reply:
+  - `PUT:http://localhost:8081/reply/flag/<Flag ID>`  
 - Reply To Comment:
-  - `POST: http://localhost:8081/comment/reply/<Comment ID>`
+  - `POST: http://localhost:8081/reply/<Comment ID>`
   - JSON:
 ```
 {

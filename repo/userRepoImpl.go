@@ -4,6 +4,8 @@ import (
 	"context"
 	"example.com/app/database"
 	"example.com/app/domain"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -78,9 +80,46 @@ func (u UserRepoImpl) DeleteByID(user *domain.User) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
-	_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
+	// sets mongo's read and write concerns
+	wc := writeconcern.New(writeconcern.WMajority())
+	rc := readconcern.Snapshot()
+	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
+
+	// set up for a transaction
+	session, err := conn.StartSession()
+
 	if err != nil {
-		return err
+		panic(err)
+	}
+
+	defer session.EndSession(context.Background())
+
+	// execute this code in a logical transaction
+	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
+		_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		_, err = conn.StoryCollection.DeleteMany(context.TODO(), bson.D{{"authorUsername", user.Username}})
+
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		return nil, err
+	}
+
+	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
+
+	if err != nil {
+		return fmt.Errorf("failed to delete user")
 	}
 
 	return nil

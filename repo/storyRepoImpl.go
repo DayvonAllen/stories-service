@@ -340,15 +340,69 @@ func (s StoryRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
 func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
+	// sets mongo's read and write concerns
+	wc := writeconcern.New(writeconcern.WMajority())
+	rc := readconcern.Snapshot()
+	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
 
-	res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+	// set up for a transaction
+	session, err := conn.StartSession()
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.EndSession(context.Background())
+
+	// execute this code in a logical transaction
+	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
+		res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		if res.DeletedCount == 0 {
+			return nil, fmt.Errorf("failed to delete story")
+		}
+
+		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		_, err = conn.ReadLaterCollection.DeleteMany(context.TODO(), bson.D{{"story._id", id}})
+
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		err = CommentRepoImpl{}.DeleteManyById(id, username)
+
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				return nil, err
+			}
+			fmt.Println(err)
+		}
+
+		return nil, err
+	}
+
+	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
 
 	if err != nil {
 		return err
-	}
-
-	if res.DeletedCount == 0 {
-		return fmt.Errorf("you can't delete a story that you didn't create")
 	}
 
 	return nil

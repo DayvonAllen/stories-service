@@ -14,4 +14,5 @@ type CommentRepo interface {
 	DisLikeCommentById(primitive.ObjectID, string) error
 	UpdateFlagCount(flag *domain.Flag) error
 	DeleteById(id primitive.ObjectID, username string) error
+	DeleteManyById(id primitive.ObjectID, username string) error
 }

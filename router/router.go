@@ -54,6 +54,7 @@ func SetupRoutes(app *fiber.App) {
 	readLater.Delete("/:id", rh.Delete)
 
 	profile := api.Group("/profile")
+	profile.Get("/:username", middleware.IsLoggedIn, uh.GetUserProfile)
 	profile.Get("/", uh.GetCurrentUserProfile)
 
 

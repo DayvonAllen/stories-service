@@ -29,3 +29,15 @@ func (uh *UserHandler) GetCurrentUserProfile(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": user})
 }
+
+func (uh *UserHandler) GetUserProfile(c *fiber.Ctx) error {
+	username := c.Params("username")
+
+	user, err := uh.UserService.GetCurrentUserProfile(username)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "success", "data": user})
+}

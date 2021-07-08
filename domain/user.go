@@ -21,23 +21,24 @@ type User struct {
 }
 
 type ViewUserProfile struct {
-	Username                    string `json:"username"`
-	CurrentTagLine              string `json:"currentTagLine"`
-	ProfilePictureUrl           string `json:"profilePictureUrl"`
-	ProfileBackgroundPictureUrl string `json:"profileBackgroundPictureUrl"`
-	CurrentBadgeUrl             string `json:"currentBadgeUrl"`
-	FollowerCount               int    `json:"followerCount"`
-	DisplayFollowerCount        bool   `json:"displayFollowerCount"`
-	IsFollowing					bool   `json:"isFollowing"`
-	Post						[]StoryDto `json:"post"`
+	Username                    string     `json:"username"`
+	CurrentTagLine              string     `json:"currentTagLine"`
+	ProfilePictureUrl           string     `json:"profilePictureUrl"`
+	ProfileBackgroundPictureUrl string     `json:"profileBackgroundPictureUrl"`
+	CurrentBadgeUrl             string     `json:"currentBadgeUrl"`
+	FollowerCount               int        `json:"followerCount"`
+	ProfileIsViewable           bool       `json:"-"`
+	DisplayFollowerCount        bool       `json:"displayFollowerCount"`
+	IsFollowing                 bool       `json:"isFollowing"`
+	Post                        []StoryDto `json:"post"`
 }
 
 type CurrentUserProfile struct {
-	Username                    string `json:"username"`
-	CurrentTagLine              string `json:"currentTagLine"`
-	ProfilePictureUrl           string `json:"profilePictureUrl"`
-	ProfileBackgroundPictureUrl string `json:"profileBackgroundPictureUrl"`
-	CurrentBadgeUrl             string `json:"currentBadgeUrl"`
-	FollowerCount               int    `json:"followerCount"`
-	Post						[]StoryDto `json:"post"`
+	Username                    string     `json:"username"`
+	CurrentTagLine              string     `json:"currentTagLine"`
+	ProfilePictureUrl           string     `json:"profilePictureUrl"`
+	ProfileBackgroundPictureUrl string     `json:"profileBackgroundPictureUrl"`
+	CurrentBadgeUrl             string     `json:"currentBadgeUrl"`
+	FollowerCount               int        `json:"followerCount"`
+	Post                        []StoryDto `json:"post"`
 }

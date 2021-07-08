@@ -16,6 +16,7 @@ import (
 type UserRepoImpl struct {
 	user domain.User
 	currentUser domain.CurrentUserProfile
+	viewedUser domain.ViewUserProfile
 }
 
 func (u UserRepoImpl) Create(user *domain.User) error {
@@ -68,6 +69,35 @@ func (u UserRepoImpl) GetCurrentUserProfile(username string) (*domain.CurrentUse
 
 	u.currentUser.Post = *stories
 	return &u.currentUser, nil
+}
+
+
+func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, error) {
+	conn := database.MongoConnectionPool.Get().(*database.Connection)
+	defer database.MongoConnectionPool.Put(conn)
+
+	err := conn.UserCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&u.viewedUser)
+
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error processing data")
+	}
+
+	if u.viewedUser.ProfileIsViewable == false {
+		return nil, fmt.Errorf("cannot view user")
+	}
+
+	stories, err := StoryRepoImpl{}.FindAllByUsername(username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	u.viewedUser.Post = *stories
+	return &u.viewedUser, nil
 }
 
 func (u UserRepoImpl) UpdateByID(user *domain.User) error {

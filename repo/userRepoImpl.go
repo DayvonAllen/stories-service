@@ -92,6 +92,10 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 		return nil, fmt.Errorf("cannot view user")
 	}
 
+	if !u.viewedUser.DisplayFollowerCount {
+		u.viewedUser.FollowerCount = -1
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -104,6 +108,7 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 		}
 
 		u.viewedUser.Posts = *stories
+
 		return
 	}()
 

@@ -26,7 +26,7 @@ type ViewUserProfile struct {
 	ProfilePictureUrl           string     `json:"profilePictureUrl"`
 	ProfileBackgroundPictureUrl string     `json:"profileBackgroundPictureUrl"`
 	CurrentBadgeUrl             string     `json:"currentBadgeUrl"`
-	FollowerCount               int        `json:"followerCount"`
+	FollowerCount               int        `json:"followerCount,omitempty"`
 	ProfileIsViewable           bool       `json:"-"`
 	DisplayFollowerCount        bool       `json:"displayFollowerCount"`
 	IsFollowing                 bool       `json:"isFollowing"`

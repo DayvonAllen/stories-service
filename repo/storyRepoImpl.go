@@ -344,6 +344,8 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 		return
 	}()
 
+	wg.Wait()
+
 	return &s.StoryDto, nil
 }
 

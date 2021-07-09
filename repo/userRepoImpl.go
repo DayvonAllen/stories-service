@@ -7,6 +7,7 @@ import (
 	"example.com/app/helper"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"sync"
 
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,9 +16,9 @@ import (
 )
 
 type UserRepoImpl struct {
-	user domain.User
+	user        domain.User
 	currentUser domain.CurrentUserProfile
-	viewedUser domain.ViewUserProfile
+	viewedUser  domain.ViewUserProfile
 }
 
 func (u UserRepoImpl) Create(user *domain.User) error {
@@ -73,7 +74,6 @@ func (u UserRepoImpl) GetCurrentUserProfile(username string) (*domain.CurrentUse
 	return &u.currentUser, nil
 }
 
-
 func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
@@ -92,14 +92,28 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 		return nil, fmt.Errorf("cannot view user")
 	}
 
-	stories, err := StoryRepoImpl{}.FindAllByUsername(username)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	if err != nil {
-		return nil, err
-	}
+	go func() {
+		defer wg.Done()
+		stories, err := StoryRepoImpl{}.FindAllByUsername(username)
 
-	u.viewedUser.Posts = *stories
-	u.viewedUser.IsFollowing = helper.CurrentUserInteraction(u.viewedUser.Followers, username)
+		if err != nil {
+			panic(err)
+		}
+
+		u.viewedUser.Posts = *stories
+		return
+	}()
+
+	go func() {
+		defer wg.Done()
+		u.viewedUser.IsFollowing = helper.CurrentUserInteraction(u.viewedUser.Followers, username)
+		return
+	}()
+
+	wg.Wait()
 	return &u.viewedUser, nil
 }
 
@@ -139,19 +153,14 @@ func (u UserRepoImpl) DeleteByID(user *domain.User) error {
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
 		_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
 		}
 
 		_, err = conn.StoryCollection.DeleteMany(context.TODO(), bson.D{{"authorUsername", user.Username}})
 
 		if err != nil {
-			if err != mongo.ErrNoDocuments {
-				return nil, err
-			}
-			fmt.Println(err)
+			return nil, err
+
 		}
 
 		return nil, err

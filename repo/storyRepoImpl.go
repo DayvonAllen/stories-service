@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -321,17 +322,27 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 		return nil, fmt.Errorf("error processing data")
 	}
 
-	s.StoryDto.CurrentUserLiked = helper.CurrentUserInteraction(s.StoryDto.Likes, username)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	if !s.StoryDto.CurrentUserLiked {
-		s.StoryDto.CurrentUserDisLiked = helper.CurrentUserInteraction(s.StoryDto.Dislikes, username)
-	}
+	go func() {
+		defer wg.Done()
+		s.StoryDto.CurrentUserLiked = helper.CurrentUserInteraction(s.StoryDto.Likes, username)
 
-	s.StoryDto.Comments, err = CommentRepoImpl{}.FindAllCommentsByResourceId(s.StoryDto.Id, username)
+		if !s.StoryDto.CurrentUserLiked {
+			s.StoryDto.CurrentUserDisLiked = helper.CurrentUserInteraction(s.StoryDto.Dislikes, username)
+		}
+		return
+	}()
 
-	if err != nil {
-		return nil, err
-	}
+	go func() {
+		defer wg.Done()
+		s.StoryDto.Comments, err = CommentRepoImpl{}.FindAllCommentsByResourceId(s.StoryDto.Id, username)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}()
 
 	return &s.StoryDto, nil
 }

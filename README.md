@@ -118,4 +118,8 @@
   - `POST:http://localhost:8081/read/<Story ID>`
 - Delete Story from read later list:
   - `DELETE:http://localhost:8081/read/<Story ID>`
+- Get Current User Profile:
+  - `GET:http://localhost:8081/profile`
+- Get other user's profile:
+  - `GET:http://localhost:8081/profile/<Username>`
 ---

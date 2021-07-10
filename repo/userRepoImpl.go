@@ -49,7 +49,7 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 			event.Target = user.Id.String()
 			event.ResourceId = user.Id
 			event.ActorUsername = user.Username
-			event.Message = "user was created Id:" + user.Id.String()
+			event.Message = "user was created, Id:" + user.Id.String()
 			err = SendEventMessage(event, 0)
 			if err != nil {
 				fmt.Println("Error publishing...")

@@ -43,6 +43,20 @@ func (c CommentRepoImpl) Create(comment *domain.Comment) error {
 		return err
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "comment on story"
+		event.Target = comment.ResourceId.String()
+		event.ResourceId = comment.ResourceId
+		event.ActorUsername = comment.AuthorUsername
+		event.Message = comment.AuthorUsername + " commented on a story with the ID:" + comment.ResourceId.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return nil
 }
 
@@ -363,9 +377,6 @@ func (c CommentRepoImpl) DeleteById(id primitive.ObjectID, username string) erro
 
 			return
 		}()
-
-
-
 
 		wg.Wait()
 

@@ -207,6 +207,19 @@ func (u UserRepoImpl) DeleteByID(user *domain.User) error {
 		return fmt.Errorf("failed to delete user")
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "delete user"
+		event.Target = user.Id.String()
+		event.ResourceId = user.Id
+		event.ActorUsername = user.Username
+		event.Message = "user was deleted, Id:" + user.Id.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
 	return nil
 }
 

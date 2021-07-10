@@ -260,6 +260,20 @@ func (s StoryRepoImpl) LikeStoryById(storyId primitive.ObjectID, username string
 			return nil, err
 		}
 
+		go func() {
+			event := new(domain.Event)
+			event.Action = "like story"
+			event.Target = storyId.String()
+			event.ResourceId = storyId
+			event.ActorUsername = username
+			event.Message = username + " liked a story with the ID:" + storyId.String()
+			err = SendEventMessage(event, 0)
+			if err != nil {
+				fmt.Println("Error publishing...")
+				return
+			}
+		}()
+
 		return nil, err
 	}
 
@@ -346,6 +360,20 @@ func (s StoryRepoImpl) DisLikeStoryById(storyId primitive.ObjectID, username str
 		return fmt.Errorf("failed to dislike story")
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "dislike story"
+		event.Target = storyId.String()
+		event.ResourceId = storyId
+		event.ActorUsername = username
+		event.Message = username + " disliked a story with the ID:" + storyId.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return nil
 }
 
@@ -411,6 +439,21 @@ func (s StoryRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
 
 		return nil
 	}
+
+	go func() {
+		event := new(domain.Event)
+		event.Action = "flag story"
+		event.Target = flag.FlaggedResource.String()
+		event.ResourceId = flag.FlaggedResource
+		event.ActorUsername = flag.FlaggerID.String()
+		event.Message = "story flagged"
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 
 	return fmt.Errorf("you've already flagged this story")
 }
@@ -497,6 +540,20 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 
 	go func() {
 		err := SendKafkaMessage(story, 204)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
+	go func() {
+		event := new(domain.Event)
+		event.Action = "delete story"
+		event.Target = id.String()
+		event.ResourceId = id
+		event.ActorUsername = username
+		event.Message = "story deleted"
+		err = SendEventMessage(event, 0)
 		if err != nil {
 			fmt.Println("Error publishing...")
 			return

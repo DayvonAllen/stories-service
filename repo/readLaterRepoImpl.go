@@ -50,6 +50,20 @@ func (r ReadLaterRepoImpl) Create(username string, storyId primitive.ObjectID) e
 		return nil
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "add to read-later"
+		event.Target = storyId.String()
+		event.ResourceId = storyId
+		event.ActorUsername = username
+		event.Message = username + " story added to read later list with the ID:" + storyId.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return fmt.Errorf("you already added this story to your read later list")
 }
 

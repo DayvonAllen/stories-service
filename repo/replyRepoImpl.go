@@ -40,6 +40,20 @@ func (r ReplyRepoImpl) Create(comment *domain.Reply) error {
 		return err
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "reply to comment"
+		event.Target = comment.ResourceId.String()
+		event.ResourceId = comment.ResourceId
+		event.ActorUsername = comment.AuthorUsername
+		event.Message = comment.AuthorUsername + " replied to a comment with the ID:" + comment.ResourceId.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return nil
 }
 

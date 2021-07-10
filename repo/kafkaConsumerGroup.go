@@ -1,10 +1,10 @@
-package events
+package repo
 
 import (
 	"context"
 	"example.com/app/domain"
 	"github.com/Shopify/sarama"
-	"github.com/vmihailenco/msgpack"
+	"github.com/vmihailenco/msgpack/v5"
 	"log"
 	"os"
 	"os/signal"
@@ -87,7 +87,7 @@ func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
 // ConsumeClaim must start a consumer loop of ConsumerGroupClaim's Messages().
 func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for message := range claim.Messages() {
-		user := new(domain.UserMessage)
+		user := new(domain.Message)
 		err := msgpack.Unmarshal(message.Value, user)
 		log.Printf("Message claimed: value = %v, timestamp = %v, topic = %s", user, message.Timestamp, message.Topic)
 

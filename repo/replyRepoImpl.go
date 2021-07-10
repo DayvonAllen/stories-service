@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -294,21 +295,36 @@ func (r ReplyRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
-		res, err := conn.RepliesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
 
-		if res.DeletedCount == 0  {
-			return nil, fmt.Errorf("failed to delete reply")
-		}
+			res, err := conn.RepliesCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
-		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+			if err != nil {
+				panic(err)
+			}
 
-		if err != nil {
-			return nil, err
-		}
+			if res.DeletedCount == 0  {
+				panic(fmt.Errorf("failed to delete reply"))
+			}
+
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+			_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+
+			if err != nil {
+				panic(err)
+			}
+			return
+		}()
+
+		wg.Wait()
 
 		return nil, err
 	}

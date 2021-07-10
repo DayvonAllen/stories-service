@@ -1,8 +1,10 @@
 package domain
 
-// UserMessage messageType 201 user created
+// Message messageType 201 user created
 // messageType 200 user updated
-type UserMessage struct {
-	User        User `form:"user" json:"user"`
-	MessageType int  `form:"messageType" json:"messageType"`
+type Message struct {
+	User User `form:"User" json:"User"`
+	Story Story `form:"Story" json:"Story"`
+	MessageType int `form:"messageType" json:"messageType"`
+	ResourceType string `form:"resourceType" json:"resourceType"`
 }

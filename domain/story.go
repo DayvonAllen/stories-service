@@ -63,6 +63,7 @@ type FeaturedStoryDto struct {
 }
 
 type CreateStoryDto struct {
+	Id             primitive.ObjectID `bson:"_id" json:"-"`
 	Title          string    `bson:"title" json:"title"`
 	Content        string    `bson:"content" json:"content"`
 	AuthorUsername string    `bson:"authorUsername" json:"-"`

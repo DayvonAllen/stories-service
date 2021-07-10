@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -71,19 +72,35 @@ func (c CommentRepoImpl) FindAllCommentsByResourceId(resourceID primitive.Object
 	}
 
 	comments := make([]domain.CommentDto, 0, len(c.CommentDtoList))
+	var wg sync.WaitGroup
 	for _, v := range c.CommentDtoList {
-		v.CurrentUserLiked = helper.CurrentUserInteraction(v.Likes, username)
-		if !v.CurrentUserLiked {
-			v.CurrentUserDisLiked = helper.CurrentUserInteraction(v.Dislikes, username)
-		}
+		wg.Add(2)
 
-		replies, err := ReplyRepoImpl{}.FindAllRepliesByResourceId(v.Id, username)
+		go func() {
+			defer wg.Done()
 
-		v.Replies = replies
+			v.CurrentUserLiked = helper.CurrentUserInteraction(v.Likes, username)
+			if !v.CurrentUserLiked {
+				v.CurrentUserDisLiked = helper.CurrentUserInteraction(v.Dislikes, username)
+			}
 
-		if err != nil {
-			return nil, fmt.Errorf("error fetching data...")
-		}
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			replies, err := ReplyRepoImpl{}.FindAllRepliesByResourceId(v.Id, username)
+
+			v.Replies = replies
+
+			if err != nil {
+				panic(fmt.Errorf("error fetching data..."))
+			}
+			return
+		}()
+
+		wg.Wait()
 
 		comments = append(comments, v)
 	}
@@ -306,25 +323,51 @@ func (c CommentRepoImpl) DeleteById(id primitive.ObjectID, username string) erro
 
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
-		res, err := conn.CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+		var wg sync.WaitGroup
+		wg.Add(3)
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
 
-		if res.DeletedCount == 0 {
-			return nil, fmt.Errorf("you can't delete a comment that you didn't create")
-		}
+			res, err := conn.CommentsCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
-		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
-		if err != nil {
-			return nil, err
-		}
+			if err != nil {
+				panic(err)
+			}
 
-		_, err = conn.RepliesCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", id}})
-		if err != nil {
-			return nil, err
-		}
+			if res.DeletedCount == 0 {
+				panic(fmt.Errorf("you can't delete a comment that you didn't create"))
+			}
+
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+			if err != nil {
+				panic(err)
+			}
+
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			_, err = conn.RepliesCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", id}})
+			if err != nil {
+				panic(err)
+			}
+
+			return
+		}()
+
+
+
+
+		wg.Wait()
 
 		return nil, err
 	}
@@ -360,25 +403,47 @@ func (c CommentRepoImpl) DeleteManyById(id primitive.ObjectID, username string) 
 
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
-		res, err := conn.CommentsCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", id}, {"authorUsername", username}})
-		if err != nil {
-			return nil, err
-		}
+		var wg sync.WaitGroup
+		wg.Add(3)
 
-		if res.DeletedCount == 0 {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
 
-		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
-		if err != nil {
-			return nil, err
-		}
+			res, err := conn.CommentsCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", id}, {"authorUsername", username}})
+			if err != nil {
+				panic(err)
+			}
 
-		_, err = conn.RepliesCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", c.Comment.Id}})
-		if err != nil {
-			return nil, err
-		}
+			if res.DeletedCount == 0 {
+				panic(err)
+			}
 
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+			if err != nil {
+				panic(err)
+			}
+
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			_, err = conn.RepliesCollection.DeleteMany(context.TODO(), bson.D{{"resourceId", c.Comment.Id}})
+			if err != nil {
+				panic(err)
+			}
+
+			return
+		}()
+
+		wg.Wait()
 		return nil, err
 	}
 

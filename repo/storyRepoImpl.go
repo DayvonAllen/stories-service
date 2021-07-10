@@ -30,11 +30,27 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
+	story.Id = primitive.NewObjectID()
+
 	_, err := conn.StoryCollection.InsertOne(context.TODO(), &story)
 
 	if err != nil {
 		return fmt.Errorf("error processing data")
 	}
+
+	newStory := new(domain.Story)
+
+	newStory.Id = story.Id
+	newStory.Title = story.Title
+	newStory.AuthorUsername = story.AuthorUsername
+
+	go func() {
+		err := SendKafkaMessage(newStory, 201)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
 
 	return nil
 }
@@ -59,6 +75,19 @@ func (s StoryRepoImpl) UpdateById(id primitive.ObjectID, newContent string, newT
 	if err != nil {
 		return fmt.Errorf("you can't update a story you didn't write")
 	}
+
+	story := new(domain.Story)
+
+	story.Id = id
+	story.Title = newTitle
+
+	go func() {
+		err := SendKafkaMessage(story, 200)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
 
 	return nil
 }
@@ -393,33 +422,54 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
-		res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
+		var wg sync.WaitGroup
+		wg.Add(4)
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
+			res, err := conn.StoryCollection.DeleteOne(context.TODO(), bson.D{{"_id", id}, {"authorUsername", username}})
 
-		if res.DeletedCount == 0 {
-			return nil, fmt.Errorf("failed to delete story")
-		}
+			if err != nil {
+				panic(err)
+			}
 
-		_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
+			if res.DeletedCount == 0 {
+				panic(fmt.Errorf("failed to delete story"))
+			}
+			return
+		}()
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
+			_, err = conn.FlagCollection.DeleteMany(context.TODO(), bson.D{{"flaggedResource", id}})
 
-		_, err = conn.ReadLaterCollection.DeleteMany(context.TODO(), bson.D{{"story._id", id}})
+			if err != nil {
+				panic(err)
+			}
+			return
+		}()
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
+			_, err = conn.ReadLaterCollection.DeleteMany(context.TODO(), bson.D{{"story._id", id}})
 
-		err = CommentRepoImpl{}.DeleteManyById(id, username)
+			if err != nil {
+				panic(err)
+			}
+			return
+		}()
 
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wg.Done()
+			err = CommentRepoImpl{}.DeleteManyById(id, username)
+
+			if err != nil {
+				panic(err)
+			}
+			return
+		}()
+
+		wg.Wait()
 
 		return nil, err
 	}
@@ -429,6 +479,17 @@ func (s StoryRepoImpl) DeleteById(id primitive.ObjectID, username string) error 
 	if err != nil {
 		return err
 	}
+
+	story := new(domain.Story)
+	story.Id = id
+
+	go func() {
+		err := SendKafkaMessage(story, 204)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
 
 	return nil
 }

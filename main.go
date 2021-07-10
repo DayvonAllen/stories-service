@@ -1,18 +1,18 @@
 package main
 
 import (
+	"example.com/app/repo"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 
-	"example.com/app/events"
 	"example.com/app/router"
 )
 
 func init() {
 	// create database connection instance for first time
-	go events.KafkaConsumerGroup()
+	go repo.KafkaConsumerGroup()
 }
 
 func main() {

@@ -156,17 +156,33 @@ func (u UserRepoImpl) DeleteByID(user *domain.User) error {
 
 	// execute this code in a logical transaction
 	callback := func(sessionContext mongo.SessionContext) (interface{}, error) {
-		_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
-		if err != nil {
-			return nil, err
-		}
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-		_, err = conn.StoryCollection.DeleteMany(context.TODO(), bson.D{{"authorUsername", user.Username}})
+		go func() {
+			defer wg.Done()
 
-		if err != nil {
-			return nil, err
+			_, err := conn.UserCollection.DeleteOne(context.TODO(), bson.D{{"_id", user.Id}})
 
-		}
+			if err != nil {
+				panic(err)
+			}
+
+			return
+		}()
+
+		go func() {
+			defer wg.Done()
+			_, err = conn.StoryCollection.DeleteMany(context.TODO(), bson.D{{"authorUsername", user.Username}})
+
+			if err != nil {
+				panic(err)
+
+			}
+			return
+		}()
+
+		wg.Wait()
 
 		return nil, err
 	}

@@ -1,8 +1,9 @@
-package repo
+package event_consumer
 
 import (
 	"context"
 	"example.com/app/domain"
+	"example.com/app/repo"
 	"github.com/Shopify/sarama"
 	"github.com/vmihailenco/msgpack/v5"
 	"log"
@@ -22,7 +23,7 @@ func KafkaConsumerGroup() {
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	group := "go-kafka-consumer"
-	brokers := []string{"localhost:9092"}
+	brokers := []string{"localhost:19092", "localhost:29092", "localhost:39092"}
 
 	consumer := Consumer{
 		ready: make(chan bool),
@@ -95,7 +96,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			return err
 		}
 
-		err = ProcessMessage(*user)
+		err = repo.ProcessMessage(*user)
 
 		if err != nil {
 			return err

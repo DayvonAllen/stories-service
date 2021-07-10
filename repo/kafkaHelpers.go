@@ -51,12 +51,12 @@ func ProcessMessage(message domain.Message) error {
 	return fmt.Errorf("cannot process this message")
 }
 
-func PushUserToQueue(message []byte) error {
+func PushUserToQueue(message []byte, topic string) error {
 
 	producer := events.GetInstance()
 
 	msg := &sarama.ProducerMessage{
-		Topic: config.Config("PRODUCER_TOPIC"),
+		Topic: topic,
 		Value: sarama.StringEncoder(message),
 	}
 
@@ -91,7 +91,7 @@ func SendKafkaMessage(story *domain.Story, eventType int) error {
 		return err
 	}
 
-	err = PushUserToQueue(b)
+	err = PushUserToQueue(b, config.Config("PRODUCER_TOPIC"))
 
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func SendEventMessage(event *domain.Event, eventType int) error {
 		return err
 	}
 
-	err = PushUserToQueue(b)
+	err = PushUserToQueue(b, "event")
 
 	if err != nil {
 		return err

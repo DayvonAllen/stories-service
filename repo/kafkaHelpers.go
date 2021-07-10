@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/vmihailenco/msgpack/v5"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func ProcessMessage(message domain.Message) error {
@@ -100,20 +99,28 @@ func SendKafkaMessage(story *domain.Story, eventType int) error {
 
 	return nil
 }
+func SendEventMessage(event *domain.Event, eventType int) error {
+	um := new(domain.Message)
+	um.Event = *event
 
-func HandleKafkaMessage(err error, story *domain.Story, messageType int) error {
+	// user created/updated event
+	um.MessageType = eventType
+	um.ResourceType = "event"
+
+	fmt.Println(um.Event)
+	//turn user struct into a byte array
+	b, err := msgpack.Marshal(um)
+
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return err
-		}
-		return fmt.Errorf("error processing data")
+		return err
 	}
 
-	err = SendKafkaMessage(story, messageType)
+	err = PushUserToQueue(b)
 
 	if err != nil {
-		fmt.Println("Failed to publish new user")
+		return err
 	}
 
 	return nil
 }
+

@@ -43,6 +43,18 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 			return fmt.Errorf("error processing data")
 		}
 
+		go func() {
+			event := new(domain.Event)
+			event.Action = "create"
+			event.Target = "user"
+			event.Message = "user was created Id:" + user.Id.String()
+			err = SendEventMessage(event, 0)
+			if err != nil {
+				fmt.Println("Error publishing...")
+				return
+			}
+		}()
+
 		return nil
 	}
 

@@ -50,6 +50,16 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 			fmt.Println("Error publishing...")
 			return
 		}
+
+		event := new(domain.Event)
+		event.Action = "create"
+		event.Target = "story"
+		event.Message = newStory.AuthorUsername + " created a story, Id:" + newStory.Id.String()
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
 	}()
 
 	return nil

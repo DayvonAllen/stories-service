@@ -421,7 +421,7 @@ func (s StoryRepoImpl) FindById(storyID primitive.ObjectID, username string) (*d
 		event.Target = storyID.String()
 		event.ResourceId = storyID
 		event.ActorUsername = username
-		event.Message = username + "viewed story with the ID:" + storyID.String()
+		event.Message = username + " viewed story with the ID:" + storyID.String()
 		err = SendEventMessage(event, 0)
 		if err != nil {
 			fmt.Println("Error publishing...")

@@ -204,6 +204,20 @@ func (c CommentRepoImpl) LikeCommentById(commentId primitive.ObjectID, username 
 			return nil, err
 		}
 
+		go func() {
+			event := new(domain.Event)
+			event.Action = "like comment"
+			event.Target = commentId.String()
+			event.ResourceId = commentId
+			event.ActorUsername = username
+			event.Message = username + " liked a comment with the ID:" + commentId.String()
+			err = SendEventMessage(event, 0)
+			if err != nil {
+				fmt.Println("Error publishing...")
+				return
+			}
+		}()
+
 		return nil, err
 	}
 
@@ -289,6 +303,21 @@ func (c CommentRepoImpl) DisLikeCommentById(commentId primitive.ObjectID, userna
 		return fmt.Errorf("failed to dislike comment")
 	}
 
+	go func() {
+		event := new(domain.Event)
+		event.Action = "dislike comment"
+		event.Target = commentId.String()
+		event.ResourceId = commentId
+		event.ActorUsername = username
+		event.Message = username + " disliked a comment with the ID:" + commentId.String()
+		err = SendEventMessage(event, 0)
+
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return nil
 }
 
@@ -313,6 +342,20 @@ func (c CommentRepoImpl) UpdateFlagCount(flag *domain.Flag) error {
 
 		return nil
 	}
+
+	go func() {
+		event := new(domain.Event)
+		event.Action = "flagged comment"
+		event.Target = flag.FlaggedResource.String()
+		event.ResourceId = flag.FlaggedResource
+		event.ActorUsername = flag.FlaggerID.String()
+		event.Message = "comment has been flagged"
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
 
 	return fmt.Errorf("you've already flagged this comment")
 }

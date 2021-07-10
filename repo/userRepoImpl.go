@@ -133,6 +133,19 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 	}()
 
 	wg.Wait()
+
+	go func() {
+		event := new(domain.Event)
+		event.Action = "viewed user profile"
+		event.Target = username
+		event.Message = username + " was viewed"
+		err = SendEventMessage(event, 0)
+		if err != nil {
+			fmt.Println("Error publishing...")
+			return
+		}
+	}()
+
 	return &u.viewedUser, nil
 }
 

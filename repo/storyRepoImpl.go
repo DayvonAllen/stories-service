@@ -52,8 +52,10 @@ func (s StoryRepoImpl) Create(story *domain.CreateStoryDto) error {
 		}
 
 		event := new(domain.Event)
-		event.Action = "create"
-		event.Target = "story"
+		event.Action = "create story"
+		event.Target = newStory.Id.String()
+		event.ResourceId = newStory.Id
+		event.ActorUsername = newStory.AuthorUsername
 		event.Message = newStory.AuthorUsername + " created a story, Id:" + newStory.Id.String()
 		err = SendEventMessage(event, 0)
 		if err != nil {

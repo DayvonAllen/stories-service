@@ -45,8 +45,10 @@ func (u UserRepoImpl) Create(user *domain.User) error {
 
 		go func() {
 			event := new(domain.Event)
-			event.Action = "create"
-			event.Target = "user"
+			event.Action = "create user"
+			event.Target = user.Id.String()
+			event.ResourceId = user.Id
+			event.ActorUsername = user.Username
 			event.Message = "user was created Id:" + user.Id.String()
 			err = SendEventMessage(event, 0)
 			if err != nil {

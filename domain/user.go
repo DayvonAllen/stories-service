@@ -13,8 +13,8 @@ type User struct {
 	UnlockedBadgesUrls   []string             `bson:"unlockedBadgesUrls" json:"unlockedBadgesUrls"`
 	Followers            []string             `bson:"followers" json:"followers"`
 	Following            []string             `bson:"following" json:"following"`
-	BlockList            []primitive.ObjectID `bson:"blockList" json:"blockList"`
-	BlockByList          []primitive.ObjectID `bson:"blockByList" json:"blockByList"`
+	BlockList            []string `bson:"blockList" json:"blockList"`
+	BlockByList          []string `bson:"blockByList" json:"blockByList"`
 	FollowerCount        int                  `bson:"followerCount" json:"followerCount"`
 	DisplayFollowerCount bool                 `bson:"displayFollowerCount" json:"displayFollowerCount"`
 	ProfileIsViewable    bool                 `bson:"profileIsViewable" json:"profileIsViewable"`

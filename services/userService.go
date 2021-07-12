@@ -7,7 +7,7 @@ import (
 
 type UserService interface {
 	GetCurrentUserProfile(string) (*domain.CurrentUserProfile, error)
-	GetUserProfile(string) (*domain.ViewUserProfile, error)
+	GetUserProfile(string, string) (*domain.ViewUserProfile, error)
 }
 
 type DefaultUserService struct {
@@ -22,8 +22,8 @@ func (s DefaultUserService) GetCurrentUserProfile(username string) (*domain.Curr
 	return currentUser, nil
 }
 
-func (s DefaultUserService) GetUserProfile(username string) (*domain.ViewUserProfile, error) {
-	currentUser, err := s.repo.GetUserProfile(username)
+func (s DefaultUserService) GetUserProfile(username, currentUsername string) (*domain.ViewUserProfile, error) {
+	currentUser, err := s.repo.GetUserProfile(username, currentUsername)
 	if err != nil {
 		return nil, err
 	}

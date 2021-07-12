@@ -88,7 +88,7 @@ func (u UserRepoImpl) GetCurrentUserProfile(username string) (*domain.CurrentUse
 	return &u.currentUser, nil
 }
 
-func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, error) {
+func (u UserRepoImpl) GetUserProfile(username, currentUsername string) (*domain.ViewUserProfile, error) {
 	conn := database.MongoConnectionPool.Get().(*database.Connection)
 	defer database.MongoConnectionPool.Put(conn)
 
@@ -128,7 +128,7 @@ func (u UserRepoImpl) GetUserProfile(username string) (*domain.ViewUserProfile, 
 
 	go func() {
 		defer wg.Done()
-		u.viewedUser.IsFollowing = helper.CurrentUserInteraction(u.viewedUser.Followers, username)
+		u.viewedUser.IsFollowing = helper.CurrentUserInteraction(u.viewedUser.Followers, currentUsername)
 		return
 	}()
 

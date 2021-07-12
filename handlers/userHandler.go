@@ -32,8 +32,16 @@ func (uh *UserHandler) GetCurrentUserProfile(c *fiber.Ctx) error {
 
 func (uh *UserHandler) GetUserProfile(c *fiber.Ctx) error {
 	username := c.Params("username")
+	token := c.Get("Authorization")
 
-	user, err := uh.UserService.GetUserProfile(username)
+	var auth domain.Authentication
+	u, loggedIn, err := auth.IsLoggedIn(token)
+
+	if err != nil || loggedIn == false {
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
+	}
+
+	user, err := uh.UserService.GetUserProfile(username, u.Username)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})

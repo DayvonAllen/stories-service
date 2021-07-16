@@ -47,19 +47,16 @@ func ProcessMessage(message domain.Message) error {
 		}
 	}
 
-
 	return fmt.Errorf("cannot process this message")
 }
 
 func PushUserToQueue(message []byte, topic string) error {
-
 	producer := events.GetInstance()
 
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.StringEncoder(message),
 	}
-
 
 	partition, offset, err := producer.SendMessage(msg)
 	if err != nil {
@@ -83,7 +80,6 @@ func SendKafkaMessage(story *domain.Story, eventType int) error {
 	um.MessageType = eventType
 	um.ResourceType = "story"
 
-	fmt.Println(um.Story)
 	//turn user struct into a byte array
 	b, err := msgpack.Marshal(um)
 
@@ -99,6 +95,7 @@ func SendKafkaMessage(story *domain.Story, eventType int) error {
 
 	return nil
 }
+
 func SendEventMessage(event *domain.Event, eventType int) error {
 	um := new(domain.Message)
 	um.Event = *event

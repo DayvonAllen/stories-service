@@ -25,9 +25,9 @@ func (rh *ReplyHandler) CreateReply(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": "error...", "data": "Unauthorized user"})
 	}
 
-	reply := new(domain.Reply)
+	replyDto := new(domain.CreateReply)
 
-	err = c.BodyParser(reply)
+	err = c.BodyParser(replyDto)
 
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 
@@ -35,10 +35,13 @@ func (rh *ReplyHandler) CreateReply(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "error...", "data": fmt.Sprintf("%v", err)})
 	}
 
+	reply := new(domain.Reply)
+
 	reply.Likes = make([]string, 0, 0)
 	reply.Dislikes = make([]string, 0, 0)
 	reply.Id = primitive.NewObjectID()
 	reply.AuthorUsername = u.Username
+	reply.Content = replyDto.Content
 	reply.ResourceId = id
 	reply.CreatedAt = time.Now()
 	reply.UpdatedAt = time.Now()

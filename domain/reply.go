@@ -15,10 +15,14 @@ type Reply struct {
 	LikeCount           int                `bson:"likeCount" json:"likeCount"`
 	DislikeCount        int                `bson:"dislikeCount" json:"dislikeCount"`
 	Edited              bool               `bson:"edited" json:"edited"`
-	CurrentUserLiked    bool               `bson:"currentUserLiked" json:"currentUserLiked"`
-	CurrentUserDisLiked bool               `bson:"currentUserDisLiked" json:"currentUserDisLiked"`
+	CurrentUserLiked    bool               `bson:"-" json:"currentUserLiked"`
+	CurrentUserDisLiked bool               `bson:"-" json:"currentUserDisLiked"`
 	CreatedAt           time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt           time.Time          `bson:"updatedAt" json:"updatedAt"`
 	CreatedDate         string             `bson:"createdDate" json:"createdDate"`
 	UpdatedDate         string             `bson:"updatedDate" json:"updatedDate"`
+}
+
+type CreateReply struct {
+	Content        string             `bson:"content" json:"content"`
 }
